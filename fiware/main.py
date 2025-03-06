@@ -2,14 +2,13 @@ import json
 import requests
 
 from configs.config import *
-from utils.utils import clean_environment, run_container, print_time, check_containers, run_command, stop_container, \
+from utils.utils import run_container, print_time, check_containers, run_command, stop_container, \
     start_container, check_images
 
 def fiware_initialize_containers():
     container_name = fiware_config_data["CONTAINER_NAME"]
     container_image = fiware_config_data["IMAGE_NAME"]
-
-    run_container(container_name, container_image, CPU_LIMIT, RAM_LIMIT)
+    run_container(container_name, container_image, RAM_LIMIT, CPU_LIMIT)
     run_container(
         container_name="mongo-db",
         image_name="mongo",
@@ -18,6 +17,9 @@ def fiware_initialize_containers():
         port_mapping="27017:27017",
         volume_mapping=f"{container_name}-data:/data/db"
     )
+
+def fiware_start_orion():
+    start_container(fiware_config_data["CONTAINER_NAME"])
 
 def fiware_stop_and_clean_containers():
     container_name = fiware_config_data["CONTAINER_NAME"]
