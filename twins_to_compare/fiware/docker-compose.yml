@@ -1,14 +1,11 @@
 services:
-
-  # Scorpio context broker
   scorpio:
     image: scorpiobroker/all-in-one-runner:java-latest
     hostname: scorpio
-    container_name: scorpio
     networks:
-        - default
+      - default
     expose:
-        - '9090'
+      - '9090'
     environment:
       DBHOST: postgres
     ports:
@@ -16,46 +13,25 @@ services:
     depends_on:
       - postgres
 
-  # MongoDB for Orion-LD & iot agent
-  mongodb:
-    image: mongo:4.4
-    container_name: fiware-mongo
-    networks:
-        - default
-    ports:
-      - "27017:27017"
-
   postgres:
     image: postgis/postgis
+    networks:
+      - default
     ports:
-      - "5432"
+      - "5432:5432"
     environment:
       POSTGRES_USER: ngb
       POSTGRES_PASSWORD: ngb
       POSTGRES_DB: ngb
 
-  mosquitto:
-    image: eclipse-mosquitto
-    hostname: mosquitto
-    container_name: mosquitto
-    networks:
-        - default
-    expose:
-        - '1883'
-        - '9001'
-    ports:
-        - '1883:1883'
-        - '9001:9001'
-    volumes:
-        - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
-
   iot-agent:
     image: fiware/iotagent-ul:latest
     hostname: iot-agent
-    container_name: fiware-iotagent-ul
+    networks:
+      - default
     expose:
-        - "4041"
-        - "7896"
+      - "4041"
+      - "7896"
     ports:
       - "4041:4041"
       - "7896:7896"
@@ -83,6 +59,15 @@ services:
       - IOTA_FALLBACK_TENANT=openiot
       - IOTA_MULTI_CORE=true
     depends_on:
-      - mosquitto
-      - mongodb
       - scorpio
+  mongodb:
+    image: mongo:4.4
+    container_name: db-mongo
+    networks:
+        - default
+    ports:
+      - "27017:27017"
+
+networks:
+  default:
+    driver: overlay

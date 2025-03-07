@@ -1,6 +1,7 @@
+import json
 import subprocess
-import time
 import datetime
+from copy import deepcopy
 
 
 def print_time(text_to_print):
@@ -81,3 +82,20 @@ def check_images():
     """Check docker images."""
     print_time("🔍 Checking images...")
     print(run_command(["docker", "images"]))
+
+def get_road_segments_from_json(input_file, number_required=None):
+    with open(input_file, "r") as file:
+        road_segments = json.load(file)
+
+    initial_number = len(road_segments)
+
+    if number_required is not None:
+        while number_required < len(road_segments):
+            road_segments.pop()
+        i = 1
+        while number_required > len(road_segments):
+            road_segment_to_add = deepcopy(road_segments[i - 1])
+            road_segment_to_add["id"] = "urn:ngsi-ld:RoadSegment:RoadSegment" + str(initial_number + i)
+            road_segments.append(road_segment_to_add)
+            i += 1
+    return road_segments
