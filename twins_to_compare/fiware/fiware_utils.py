@@ -2,8 +2,7 @@ import json
 import requests
 
 from configs.config import *
-from utils.utils import run_container, print_time, check_containers, run_command, stop_container, \
-    start_container, check_images
+from utils.utils import run_container, print_time, stop_container, start_container
 
 def fiware_initialize_containers():
     container_name = fiware_config_data["CONTAINER_NAME"]

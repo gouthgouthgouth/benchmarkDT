@@ -1,0 +1,14 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+    hostname: mosquitto
+    networks:
+      - default
+    expose:
+      - '1883'
+      - '9001'
+    ports:
+      - '1883:1883'
+      - '9001:9001'
+    volumes:
+      - mosquitto_data:/mosquitto/config
