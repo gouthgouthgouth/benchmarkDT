@@ -19,3 +19,10 @@ fiware_config_data = {
         {"object_id": "t", "name": "truckTrafficFlow", "type": "Integer"}
     ],
 }
+
+eclipse_config_data = {
+    "DITTO_BASE_URL" : "http://localhost:8080",
+    "NAMESPACE" : "my.namespace",
+    "USERNAME" : "devops",
+    "PASSWORD" : "foobar",
+}
