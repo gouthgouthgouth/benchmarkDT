@@ -43,7 +43,7 @@ def post_thing(thing, namespace=eclipse_config_data["NAMESPACE"]):
     else:
         print_time(f"Error: {response.text}")
 
-def put_thing(thing, namespace=eclipse_config_data["NAMESPACE"]):
+def put_thing(thing, policy=None):
     url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/things/{thing["thingId"]}"
     HEADERS = {
         "Accept": "application/json",
@@ -51,11 +51,13 @@ def put_thing(thing, namespace=eclipse_config_data["NAMESPACE"]):
         "Content-Type": "application/json"
     }
     params = {"thingId" : thing["thingId"]}
+    if policy is not None:
+        thing["policyId"] = policy
     response = requests.put(url, headers=HEADERS, data=json.dumps(thing), params=params)
     if response.status_code in [200, 201]:
         print_time(f"Thing {thing["thingId"]} created successfully!")
     else:
-        print_time(f"Error when creating thing {thing["thingId"]} : {response.text}")
+        print_time(f"Error when creating thing {thing["thingId"]} : {response.text}.")
 
 def get_thing(thing_id):
     url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/things/{thing_id}"
@@ -86,16 +88,77 @@ def update_feature(thing_id, feature_to_update, value):
     else:
         print_time(f"Error, couldn't update feature {feature_to_update} on thing {thing_id} : {response.text}")
 
-#TODO
-def delete_thing(thing_id):
+def delete_thing(thing_id, delete_policy_as_well=False):
     url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/things/{thing_id}"
     HEADERS = {
         "Content-Type": "application/json",
         "Accept": "application/json",
         "Authorization" : "Basic ZGl0dG86ZGl0dG8="
     }
-    response = requests.delete(url, headers=HEADERS)
-    if response.status_code == 200:
+    params = {"thingId" : f"{thing_id}"}
+    response = requests.delete(url, headers=HEADERS, params=params)
+    if response.status_code == 204:
         print_time(f"Thing of id {thing_id} deleted successfully!")
     else:
         print_time(f"Error, thing of id {thing_id} couldn't be deleted : {response.text}")
+    if delete_policy_as_well:
+        delete_policy(thing_id)
+
+# TODO
+def put_policy(policy_id):
+    url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/policies/{policy_id}"
+    HEADERS = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization" : "Basic ZGl0dG86ZGl0dG8="
+    }
+    params = {"policyId" : f"{policy_id}"}
+    policy_definition = {
+        "policyId": f"{policy_id}",
+        "entries": {
+            "devops": {
+                "subjects": {
+                    "nginx:devops": {"type": "nginx-basic"}
+                },
+                "resources": {
+                    "things:/": {"grant": ["READ", "WRITE", "CREATE"], "revoke": []},
+                    "policy:/": {"grant": ["CREATE", "READ", "WRITE"], "revoke": []},
+                    "policies:/": {"grant": ["CREATE", "READ", "WRITE"], "revoke": []}
+                }
+            }
+        }
+    }
+    data = json.dumps(policy_definition)
+    response = requests.put(url, headers=HEADERS, params=params, data=data)
+    if response.status_code == 201:
+        print_time(f"Policy of id {policy_id} created successfully!")
+    else:
+        print_time(f"Error, policy of id {policy_id} couldn't be created : {response.text}")
+
+def get_policy(policy_id):
+    url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/policies/{policy_id}"
+    HEADERS = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization" : "Basic ZGl0dG86ZGl0dG8="
+    }
+    params = {"policyId" : f"{policy_id}"}
+    response = requests.get(url, headers=HEADERS, params=params)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print_time(f"Error: {response.text}")
+
+def delete_policy(policy_id):
+    url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/policies/{policy_id}"
+    HEADERS = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization" : "Basic ZGl0dG86ZGl0dG8="
+    }
+    params = {"policyId" : f"{policy_id}"}
+    response = requests.delete(url, headers=HEADERS, params=params)
+    if response.status_code == 204:
+        print_time(f"Policy of id {policy_id} deleted successfully!")
+    else:
+        print_time(f"Error, policy of id {policy_id} couldn't be deleted : {response.text}")

@@ -13,6 +13,14 @@ if __name__ == "__main__":
     for thing_id in ditto_things:
         thing = ditto_things[thing_id]
         # post_thing(thing)
-        # put_thing(thing)
-        t = delete_thing(thing_id=thing_id)
-        pprint.pprint(t)
+        # put_thing(thing, policy=None)
+        # t = get_thing(thing_id=thing_id)
+        put_policy(thing_id)
+        # delete_policy(thing_id)
+        # p = get_policy(thing_id)
+        # pprint.pprint(t)
+        # pprint.pprint(p)
+        # if t != None:
+        #     t = delete_thing(thing_id=thing_id, delete_policy_as_well=True)
+        #     pprint.pprint(t)
+        # update_feature(thing_id, feature_to_update, value)
