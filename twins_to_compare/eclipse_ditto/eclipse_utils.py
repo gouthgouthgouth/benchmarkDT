@@ -1,8 +1,8 @@
 import json
 import time
 import requests
-from configs.config import eclipse_config_data, RAM_LIMIT, CPU_LIMIT
-from utils.utils import print_time
+from configs.config import eclipse_config_data, RAM_LIMIT, CPU_LIMIT, MQTT_PORT, MQTT_TOPIC, MQTT_BROKER, CONNECTION_ID
+from scripts.utils import print_time
 
 def transform_jsonld_to_ditto(jsonld_file):
     with open(jsonld_file, "r", encoding="utf-8") as f:
@@ -20,7 +20,9 @@ def transform_jsonld_to_ditto(jsonld_file):
                 "elevations": entity.get("elevations", {}).get("value", []),
                 "length": entity.get("length", {}).get("value", 0),
                 "totalLaneNumber": entity.get("totalLaneNumber", {}).get("value", 0),
-                "speedLimit": entity.get("speedLimit", {}).get("value", 0)
+                "speedLimit": entity.get("speedLimit", {}).get("value", 0),
+                "carTrafficFlow": 50,
+                "truckTrafficFlow": 20
             }
         }
 
@@ -162,3 +164,60 @@ def delete_policy(policy_id):
         print_time(f"Policy of id {policy_id} deleted successfully!")
     else:
         print_time(f"Error, policy of id {policy_id} couldn't be deleted : {response.text}")
+
+def put_mqtt_connection():
+    url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/connections/mqtt_connection"
+    HEADERS = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization" : "Basic ZGV2b3BzOmZvb2Jhcg=="
+    }
+    mqtt_connection = {
+        "connectionType": "mqtt",
+        "connectionStatus": "open",
+        "failoverEnabled": True,
+        "uri": f"tcp://{MQTT_BROKER}:{MQTT_PORT}",  # ✅ Fix: Correctly using "uri" instead of "address"
+
+        # === MQTT Source: Listening for Sensor Data ===
+        "sources": [
+            {
+                "addresses": [
+                    "traffic/road_segment/#"  # ✅ Subscribes to all road segments
+                ],
+                "authorizationContext": ["nginx:devops"],  # ✅ Uses correct auth context
+                "qos": 1,  # ✅ At least once delivery
+                "filters": []
+            }
+        ],
+
+        # === MQTT Target: Sending Processed Data Back to MQTT Broker ===
+        "targets": [
+            {
+                "address": "traffic/processed/{{ thing:id }}",
+                "topics": [
+                    "_/_/things/twin/events",
+                    "_/_/things/live/messages"
+                ],
+                "authorizationContext": ["nginx:devops"],
+                "qos": 1  # ✅ Ensure reliable message delivery
+            }
+        ],
+
+        # === Specific MQTT Configuration ===
+        "specificConfig": {
+            "clientId": "ditto-mqtt-client",
+            "cleanSession": True,
+            "keepAlive": 60,
+            "lastWillTopic": "traffic/last_will",
+            "lastWillQos": 1,
+            "lastWillRetain": False,
+            "lastWillMessage": "Ditto MQTT connection lost"
+        }
+    }
+
+    response = requests.put(url, headers=HEADERS, data=json.dumps(mqtt_connection))
+
+    if response.status_code in [200, 201, 204]:
+        print_time("✅ MQTT Connection configured successfully!")
+    else:
+        print_time(f"❌ Error configuring MQTT connection: {response.text}")
