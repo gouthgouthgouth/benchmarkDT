@@ -12,3 +12,6 @@ services:
       - '9001:9001'
     volumes:
       - mosquitto_data:/mosquitto/config
+
+volumes:
+  mosquitto_data:
