@@ -4,8 +4,8 @@ import time
 import requests
 
 from configs.config import fiware_config_data, RAM_LIMIT, CPU_LIMIT
-from twins_to_compare.fiware.sensor_measurements_simulator import create_measurement
-from utils.utils import run_container, print_time, stop_container, start_container, get_road_segments_from_json
+from scripts.sensor_measurements_simulator import create_measurement_ul
+from scripts.utils import run_container, print_time, stop_container, start_container, get_road_segments_from_json
 
 
 def fiware_initialize_containers():
