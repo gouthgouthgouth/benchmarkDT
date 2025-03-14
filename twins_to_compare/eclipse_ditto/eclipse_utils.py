@@ -118,14 +118,16 @@ def put_policy(policy_id):
     policy_definition = {
         "policyId": f"{policy_id}",
         "entries": {
-            "devops": {
+            "DEFAULT": {
+                "importable": "implicit",
                 "subjects": {
-                    "nginx:devops": {"type": "nginx-basic"}
+                    "nginx:ditto": { "type": "generated" },
+                    "nginx:devops": { "type": "generated" }
                 },
                 "resources": {
-                    "things:/": {"grant": ["READ", "WRITE", "CREATE"], "revoke": []},
+                    "thing:/": {"grant": ["READ", "WRITE", "CREATE"], "revoke": []},
                     "policy:/": {"grant": ["CREATE", "READ", "WRITE"], "revoke": []},
-                    "policies:/": {"grant": ["CREATE", "READ", "WRITE"], "revoke": []}
+                    "message:/": {"grant": ["CREATE", "READ", "WRITE"], "revoke": []}
                 }
             }
         }
@@ -173,46 +175,34 @@ def put_mqtt_connection():
         "Authorization" : "Basic ZGV2b3BzOmZvb2Jhcg=="
     }
     mqtt_connection = {
+        "name": "Mosquitto",
         "connectionType": "mqtt",
         "connectionStatus": "open",
         "failoverEnabled": True,
-        "uri": f"tcp://{MQTT_BROKER}:{MQTT_PORT}",  # ✅ Fix: Correctly using "uri" instead of "address"
-
-        # === MQTT Source: Listening for Sensor Data ===
+        "uri": "tcp://mosquitto:1883",  # ✅ Ensure broker is reachable
         "sources": [
             {
-                "addresses": [
-                    "traffic/road_segment/#"  # ✅ Subscribes to all road segments
-                ],
-                "authorizationContext": ["nginx:devops"],  # ✅ Uses correct auth context
-                "qos": 1,  # ✅ At least once delivery
-                "filters": []
-            }
-        ],
-
-        # === MQTT Target: Sending Processed Data Back to MQTT Broker ===
-        "targets": [
-            {
-                "address": "traffic/processed/{{ thing:id }}",
-                "topics": [
-                    "_/_/things/twin/events",
-                    "_/_/things/live/messages"
-                ],
+                "addresses": ["my.namespace/#"],  # ✅ Subscribe to correct topic
                 "authorizationContext": ["nginx:devops"],
-                "qos": 1  # ✅ Ensure reliable message delivery
+                "qos": 1,
+                "headerMapping": {
+                    "mqtt.topic": "{{ header:mqtt.topic }}"
+                },
+                "payloadMapping": [
+                    {
+                        "type": "json",
+                        "mapping": {
+                            "path": "/attributes",
+                            "value": {
+                                # "thingId": "{{ json:thingId }}",  # ✅ Correctly extracts Thing ID
+                                "attributes/carTrafficFlow": "{{ json:carTrafficFlow }}",  # ✅ Maps car traffic
+                                "attributes/truckTrafficFlow": "{{ json:truckTrafficFlow }}",  # ✅ Maps truck traffic
+                            }
+                        }
+                    }
+                ]
             }
-        ],
-
-        # === Specific MQTT Configuration ===
-        "specificConfig": {
-            "clientId": "ditto-mqtt-client",
-            "cleanSession": True,
-            "keepAlive": 60,
-            "lastWillTopic": "traffic/last_will",
-            "lastWillQos": 1,
-            "lastWillRetain": False,
-            "lastWillMessage": "Ditto MQTT connection lost"
-        }
+        ]
     }
 
     response = requests.put(url, headers=HEADERS, data=json.dumps(mqtt_connection))
