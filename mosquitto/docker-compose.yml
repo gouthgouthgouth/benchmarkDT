@@ -1,9 +1,11 @@
 services:
   mosquitto:
     image: eclipse-mosquitto
+    container_name: mosquitto
     hostname: mosquitto
+    restart: always
     networks:
-      - default
+      - docker_ditto_network
     expose:
       - '1883'
       - '9001'
@@ -11,7 +13,13 @@ services:
       - '1883:1883'
       - '9001:9001'
     volumes:
-      - mosquitto_data:/mosquitto/config
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto_data:/mosquitto/data
+    command: mosquitto -c /mosquitto/config/mosquitto.conf
 
 volumes:
   mosquitto_data:
+
+networks:
+  docker_ditto_network:
+    external: true
