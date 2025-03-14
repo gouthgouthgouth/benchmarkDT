@@ -1,7 +1,7 @@
 
 RAM_LIMIT="2g"
 CPU_LIMIT="2.0"
-MQTT_BROKER = "mosquitto"
+MQTT_BROKER = "localhost"
 MQTT_PORT = 1883
 MQTT_TOPIC = "sensor/data"
 CONNECTION_ID = "mosquitto_connection"
