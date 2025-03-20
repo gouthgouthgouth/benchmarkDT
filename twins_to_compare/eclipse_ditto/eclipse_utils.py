@@ -1,14 +1,18 @@
 import json
 import time
+from copy import deepcopy
+
 import requests
+from requests.auth import HTTPBasicAuth
+
 from configs.config import eclipse_config_data, RAM_LIMIT, CPU_LIMIT, MQTT_PORT, MQTT_TOPIC, MQTT_BROKER, CONNECTION_ID
 from scripts.utils import print_time
 
-def transform_jsonld_to_ditto(jsonld_file):
-    with open(jsonld_file, "r", encoding="utf-8") as f:
+def transform_jsonld_to_ditto(input_file, number_required=None):
+    with open(input_file, "r", encoding="utf-8") as f:
         jsonld_data = json.load(f)
 
-    ditto_things = {}
+    ditto_things = []
 
     for entity in jsonld_data:
         thing_id = f"{eclipse_config_data["NAMESPACE"]}:{entity["id"].split(":")[-1]}"
@@ -21,12 +25,24 @@ def transform_jsonld_to_ditto(jsonld_file):
                 "length": entity.get("length", {}).get("value", 0),
                 "totalLaneNumber": entity.get("totalLaneNumber", {}).get("value", 0),
                 "speedLimit": entity.get("speedLimit", {}).get("value", 0),
-                "carTrafficFlow": 50,
-                "truckTrafficFlow": 20
+                # "trafficFlow": {
+                #     "value": {}
+                # }
             }
         }
+        ditto_things.append(thing)
 
-        ditto_things[thing_id] = thing
+    initial_number = len(ditto_things)
+
+    if number_required is not None:
+        while number_required < len(ditto_things):
+            ditto_things.pop()
+        i = 1
+        while number_required > len(ditto_things):
+            road_segment_to_add = deepcopy(ditto_things[i - 1])
+            road_segment_to_add["thingId"] = f"{eclipse_config_data["NAMESPACE"]}:{road_segment_to_add["type"]}{initial_number + i}"
+            ditto_things.append(road_segment_to_add)
+            i += 1
 
     return ditto_things
 
@@ -35,11 +51,10 @@ def post_thing(thing, namespace=eclipse_config_data["NAMESPACE"]):
     thing.pop("thingId")
     HEADERS = {
         "Accept": "application/json",
-        "Authorization" : "Basic ZGl0dG86ZGl0dG8=",
         "Content-Type": "application/json"
     }
     params = {"namespace" : namespace}
-    response = requests.post(url, headers=HEADERS, data=json.dumps(thing), params=params)
+    response = requests.post(url, headers=HEADERS, data=json.dumps(thing), params=params, auth=HTTPBasicAuth('devops', 'foobar'))
     if response.status_code in [200, 201]:
         print_time("Thing created successfully!")
     else:
@@ -49,13 +64,12 @@ def put_thing(thing, policy=None):
     url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/things/{thing["thingId"]}"
     HEADERS = {
         "Accept": "application/json",
-        "Authorization" : "Basic ZGl0dG86ZGl0dG8=",
         "Content-Type": "application/json"
     }
     params = {"thingId" : thing["thingId"]}
     if policy is not None:
         thing["policyId"] = policy
-    response = requests.put(url, headers=HEADERS, data=json.dumps(thing), params=params)
+    response = requests.put(url, data=json.dumps(thing), params=params, auth=HTTPBasicAuth('devops', 'foobar'))
     if response.status_code in [200, 201]:
         print_time(f"Thing {thing["thingId"]} created successfully!")
     else:
@@ -65,11 +79,10 @@ def get_thing(thing_id):
     url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/things/{thing_id}"
     HEADERS = {
         "Accept": "application/json",
-        "Authorization" : "Basic ZGl0dG86ZGl0dG8=",
         "Content-Type": "application/json"
     }
     params = {"thingId" : f"{thing_id}"}
-    response = requests.get(url, headers=HEADERS, params=params)
+    response = requests.get(url, headers=HEADERS, params=params, auth=HTTPBasicAuth('devops', 'foobar'))
     if response.status_code == 200:
         return response.json()
     else:
@@ -81,10 +94,9 @@ def update_feature(thing_id, feature_to_update, value):
     HEADERS = {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "Authorization" : "Basic ZGl0dG86ZGl0dG8="
     }
     data = json.dumps({"value": value})
-    response = requests.put(url, headers=HEADERS, data=data)
+    response = requests.put(url, headers=HEADERS, data=data, auth=HTTPBasicAuth('devops', 'foobar'))
     if response.status_code == 200:
         print_time(f"Feature updated successfully on thing of id {thing_id}")
     else:
@@ -95,10 +107,9 @@ def delete_thing(thing_id, delete_policy_as_well=False):
     HEADERS = {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "Authorization" : "Basic ZGl0dG86ZGl0dG8="
     }
     params = {"thingId" : f"{thing_id}"}
-    response = requests.delete(url, headers=HEADERS, params=params)
+    response = requests.delete(url, headers=HEADERS, params=params, auth=HTTPBasicAuth('devops', 'foobar'))
     if response.status_code == 204:
         print_time(f"Thing of id {thing_id} deleted successfully!")
     else:
@@ -106,13 +117,11 @@ def delete_thing(thing_id, delete_policy_as_well=False):
     if delete_policy_as_well:
         delete_policy(thing_id)
 
-# TODO
 def put_policy(policy_id):
     url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/policies/{policy_id}"
     HEADERS = {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "Authorization" : "Basic ZGl0dG86ZGl0dG8="
     }
     params = {"policyId" : f"{policy_id}"}
     policy_definition = {
@@ -133,7 +142,7 @@ def put_policy(policy_id):
         }
     }
     data = json.dumps(policy_definition)
-    response = requests.put(url, headers=HEADERS, params=params, data=data)
+    response = requests.put(url, headers=HEADERS, params=params, data=data, auth=HTTPBasicAuth('devops', 'foobar'))
     if response.status_code == 201:
         print_time(f"Policy of id {policy_id} created successfully!")
     else:
@@ -144,10 +153,9 @@ def get_policy(policy_id):
     HEADERS = {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "Authorization" : "Basic ZGl0dG86ZGl0dG8="
     }
     params = {"policyId" : f"{policy_id}"}
-    response = requests.get(url, headers=HEADERS, params=params)
+    response = requests.get(url, headers=HEADERS, params=params, auth=HTTPBasicAuth('devops', 'foobar'))
     if response.status_code == 200:
         return response.json()
     else:
@@ -158,10 +166,9 @@ def delete_policy(policy_id):
     HEADERS = {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "Authorization" : "Basic ZGl0dG86ZGl0dG8="
     }
     params = {"policyId" : f"{policy_id}"}
-    response = requests.delete(url, headers=HEADERS, params=params)
+    response = requests.delete(url, headers=HEADERS, params=params, auth=HTTPBasicAuth('devops', 'foobar'))
     if response.status_code == 204:
         print_time(f"Policy of id {policy_id} deleted successfully!")
     else:
@@ -185,22 +192,22 @@ def put_mqtt_connection():
                 "addresses": ["my.namespace/#"],  # ✅ Subscribe to correct topic
                 "authorizationContext": ["nginx:devops"],
                 "qos": 1,
-                "headerMapping": {
-                    "mqtt.topic": "{{ header:mqtt.topic }}"
-                },
-                "payloadMapping": [
-                    {
-                        "type": "json",
-                        "mapping": {
-                            "path": "/attributes",
-                            "value": {
-                                # "thingId": "{{ json:thingId }}",  # ✅ Correctly extracts Thing ID
-                                "attributes/carTrafficFlow": "{{ json:carTrafficFlow }}",  # ✅ Maps car traffic
-                                "attributes/truckTrafficFlow": "{{ json:truckTrafficFlow }}",  # ✅ Maps truck traffic
-                            }
-                        }
-                    }
-                ]
+                # "headerMapping": {
+                #     "mqtt.topic": "{{ header:mqtt.topic }}"
+                # },
+                # "payloadMapping": [
+                #     {
+                #         "type": "json",
+                #         "mapping": {
+                #             "path": "/attributes",
+                #             "value": {
+                #                 # "thingId": "{{ json:thingId }}",  # ✅ Correctly extracts Thing ID
+                #                 "attributes/carTrafficFlow": "{{ json:carTrafficFlow }}",  # ✅ Maps car traffic
+                #                 "attributes/truckTrafficFlow": "{{ json:truckTrafficFlow }}",  # ✅ Maps truck traffic
+                #             }
+                #         }
+                #     }
+                # ]
             }
         ]
     }
@@ -211,3 +218,5 @@ def put_mqtt_connection():
         print_time("✅ MQTT Connection configured successfully!")
     else:
         print_time(f"❌ Error configuring MQTT connection: {response.text}")
+
+# def send_messages(ditto_things, msg_frequency):

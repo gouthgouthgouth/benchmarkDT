@@ -1,3 +1,5 @@
+from datetime import datetime, UTC
+
 import requests
 import paho.mqtt.client as mqtt
 import json
@@ -42,26 +44,15 @@ def create_measurement_ul(device_id, car_traffic_flow, truck_traffic_flow):
 
 def create_measurement_mqtt(car_traffic_flow, truck_traffic_flow, thing_id):
     MQTT_TOPIC = f"{eclipse_config_data["NAMESPACE"]}/{thing_id.split(":")[-1]}/things/twin/commands/modify"
-    # sensor_data = {
-    #     "thingId": thing_id,
-    #     "carTrafficFlow": car_traffic_flow,
-    #     "truckTrafficFlow": truck_traffic_flow,
-    #     "topic": MQTT_TOPIC,  # ✅ Required for Ditto
-    #     "path": "/attributes"
-    # }
-
     sensor_data = {
         "topic": MQTT_TOPIC,
-        "headers": {
-            "content-type": "application/json"
-        },
-        "path": "/attributes",
+        "path": "/attributes/trafficFlow/value",
         "value": {
+            "measuredAt": datetime.now(UTC).isoformat(),
             "carTrafficFlow": car_traffic_flow,
             "truckTrafficFlow": truck_traffic_flow
         }
     }
-
     client = mqtt.Client()
     client.username_pw_set("devops", "foobar")
     client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)

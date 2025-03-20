@@ -5,7 +5,7 @@ services:
     hostname: mosquitto
     restart: always
     networks:
-      - docker_ditto_network
+      - external_network
     expose:
       - '1883'
       - '9001'
@@ -21,5 +21,5 @@ volumes:
   mosquitto_data:
 
 networks:
-  docker_ditto_network:
+  external_network:
     external: true
