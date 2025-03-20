@@ -12,5 +12,5 @@ echo "Redirecting logs from container '$CONTAINER_NAME' to file '$OUTPUT_FILE' w
 
 docker logs -f "$CONTAINER_NAME" | while IFS= read -r line
 do
-  echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $line"
+  echo "$(date +"%Y-%m-%d %H:%M:%S.%3N") $line" >> "$OUTPUT_FILE"
 done

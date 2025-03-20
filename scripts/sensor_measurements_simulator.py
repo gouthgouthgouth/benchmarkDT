@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, UTC
 
 import requests
@@ -60,3 +61,49 @@ def create_measurement_mqtt(car_traffic_flow, truck_traffic_flow, thing_id):
     client.publish(MQTT_TOPIC, payload)
     print_time(f"📡 Sent: {payload}")
     client.disconnect()
+
+def send_messages(ditto_things, msg_frequency_hz, nb_messages=10000):
+    data = {
+        "path": "/attributes/trafficFlow/value",
+        "value": {
+            "measuredAt": datetime.now(UTC).isoformat(),
+            "carTrafficFlow": 10,
+            "truckTrafficFlow": 10
+        }
+    }
+    next_time = time.perf_counter()
+    interval = 1 / (msg_frequency_hz * len(ditto_things))
+
+
+    client = mqtt.Client()
+    client.username_pw_set("devops", "foobar")
+    client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
+
+    sent = 0
+
+    try:
+        while not sent == nb_messages:
+            for thing_id in [thing['thingId'] for thing in ditto_things]:
+                data["value"]["measuredAt"] = datetime.now(UTC).isoformat()
+                MQTT_TOPIC = f"my.namespace/{thing_id.split(':')[-1]}/things/twin/commands/modify"
+                data["topic"] = MQTT_TOPIC
+                payload = json.dumps(data)
+                client.publish(MQTT_TOPIC, payload)
+
+                # attendre précisément jusqu'au prochain envoi
+                next_time += interval
+                sleep_time = next_time - time.perf_counter()
+                if sleep_time > 0:
+                    # print(round(sleep_time/interval, 2))
+                    time.sleep(sleep_time)
+
+                sent += 1
+
+                if sent == nb_messages:
+                    break
+    except KeyboardInterrupt:
+        client.loop_stop()
+        client.disconnect()
+
+    print_time("All messages have been sent")
+    return 0

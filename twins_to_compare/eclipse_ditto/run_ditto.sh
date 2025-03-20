@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Define variables
-BRIDGE_NAME="br-ext"
 MOSQUITTO_DOCKER_COMPOSE_LOCATION="/home/gauthier-le-tat/PycharmProjects/benchmarkDT/mosquitto"
 DIND_DOCKER_COMPOSE_LOCATION="/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/eclipse_ditto"
 NETWORK_NAME="external_network"
@@ -37,7 +36,3 @@ fi
 if ! docker network inspect external_network | grep -q "$DIND_CONTAINER"; then
     docker network connect external_network "$DIND_CONTAINER"
 fi
-
-echo "Attaching to mosquitto for logs."
-
-docker logs -f mosquitto

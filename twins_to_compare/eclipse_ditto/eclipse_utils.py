@@ -40,7 +40,7 @@ def transform_jsonld_to_ditto(input_file, number_required=None):
         i = 1
         while number_required > len(ditto_things):
             road_segment_to_add = deepcopy(ditto_things[i - 1])
-            road_segment_to_add["thingId"] = f"{eclipse_config_data["NAMESPACE"]}:{road_segment_to_add["type"]}{initial_number + i}"
+            road_segment_to_add["thingId"] = f"{eclipse_config_data["NAMESPACE"]}:{road_segment_to_add["attributes"]["type"]}{initial_number + i}"
             ditto_things.append(road_segment_to_add)
             i += 1
 
