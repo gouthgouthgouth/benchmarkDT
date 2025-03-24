@@ -87,27 +87,30 @@ def send_messages_uniformlaw(things, msg_frequency_hz, nb_seconds, start_time):
     sleep_time = (start_time - datetime.now(timezone.utc)).total_seconds()
     time.sleep(sleep_time)
 
+    thing_ids = [thing['thingId'] for thing in things]
+    i = 0
+
     try:
         while not sent >= nb_messages:
-            for thing_id in [thing['thingId'] for thing in things]:
-                message_time = datetime.now(UTC).isoformat()
-                data["value"]["measuredAt"] = message_time
-                data["value"]["measuredAt"] = message_time
-                MQTT_TOPIC = f"my.namespace/{thing_id.split(':')[-1]}/things/twin/commands/modify"
-                data["topic"] = MQTT_TOPIC
-                payload = json.dumps(data)
-                client.publish(MQTT_TOPIC, payload)
+            data["value"]["measuredAt"] = datetime.now(UTC).isoformat()
+            MQTT_TOPIC = f"my.namespace/{thing_ids[i].split(':')[-1]}/things/twin/commands/modify"
+            data["topic"] = MQTT_TOPIC
+            payload = json.dumps(data)
+            client.publish(MQTT_TOPIC, payload)
 
-                # attendre précisément jusqu'au prochain envoi
-                next_time += interval
-                sleep_time = next_time - time.perf_counter()
-                if sleep_time > 0:
-                    time.sleep(sleep_time)
+            # attendre précisément jusqu'au prochain envoi
+            next_time += interval
+            sleep_time = next_time - time.perf_counter()
+            if sleep_time > 0:
+                time.sleep(sleep_time)
 
-                sent += 1
+            sent += 1
 
-                if sent == nb_messages:
-                    break
+            if i < len(thing_ids) - 1:
+                i += 1
+            else:
+                i = 0
+
     except KeyboardInterrupt:
         client.loop_stop()
         client.disconnect()
@@ -152,7 +155,10 @@ def send_messages_poissonlaw(things, poisson_lambda, nb_seconds, start_time):
             client.publish(MQTT_TOPIC, payload)
             interval = np.random.exponential(1 / poisson_lambda)
             time.sleep(interval)
-            i += 1 if i < len(thing_ids) - 1 else 0
+            if i < len(thing_ids) - 1:
+                i += 1
+            else:
+                i = 0
     except KeyboardInterrupt:
         client.loop_stop()
         client.disconnect()
@@ -186,10 +192,6 @@ def send_messages_gaussianlaw(things, nb_messages, nb_seconds, start_time, cente
             sleep_time = send_time_point - now_perf
             if sleep_time > 0:
                 time.sleep(sleep_time)
-
-            thing_id = thing_ids[i]
-            i += 1 if i < len(thing_ids) - 1 else 0
-
             data = {
                 "path": "/attributes/trafficFlow/value",
                 "value": {
@@ -197,10 +199,15 @@ def send_messages_gaussianlaw(things, nb_messages, nb_seconds, start_time, cente
                     "carTrafficFlow": 10,
                     "truckTrafficFlow": 10
                 },
-                "topic": f"my.namespace/{thing_id.split(':')[-1]}/things/twin/commands/modify"
+                "topic": f"my.namespace/{thing_ids[i].split(':')[-1]}/things/twin/commands/modify"
             }
             payload = json.dumps(data)
             client.publish(data["topic"], payload)
+
+            if i < len(thing_ids) - 1:
+                i += 1
+            else:
+                i = 0
 
     except KeyboardInterrupt:
         client.loop_stop()

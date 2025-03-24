@@ -2,8 +2,6 @@ services:
   scorpio:
     image: scorpiobroker/all-in-one-runner:java-latest
     hostname: scorpio
-    networks:
-      - default
     expose:
       - '9090'
     environment:
@@ -15,8 +13,6 @@ services:
 
   postgres:
     image: postgis/postgis
-    networks:
-      - default
     ports:
       - "5432:5432"
     environment:
@@ -27,8 +23,6 @@ services:
   iot-agent:
     image: fiware/iotagent-ul:latest
     hostname: iot-agent
-    networks:
-      - default
     expose:
       - "4041"
       - "7896"
@@ -60,14 +54,9 @@ services:
       - IOTA_MULTI_CORE=true
     depends_on:
       - scorpio
+
   mongodb:
     image: mongo:4.4
     container_name: db-mongo
-    networks:
-        - default
     ports:
       - "27017:27017"
-
-networks:
-  default:
-    driver: overlay

@@ -11,7 +11,7 @@ DIND_CONTAINER="docker-host"
 if ! docker network inspect "$NETWORK_NAME" &>/dev/null; then
     echo "Network $NETWORK_NAME does not exist. Creating it now..."
     docker network create --driver=bridge $NETWORK_NAME
-    echo "Network $NETWORK_NAME created and attached to bridge $BRIDGE_NAME."
+    echo "Network $NETWORK_NAME created."
 else
     echo "Network $NETWORK_NAME already exists."
 fi

@@ -38,7 +38,7 @@ if __name__ == "__main__":
     # Durée des mesures
     nb_seconds = 50
     # Fréquence d'envoi des messages MQTT
-    average_frequency = 20
+    average_frequency = 50
 
     file_datetime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     ditto_things = transform_jsonld_to_ditto(input_file_json, number_required=nb_entities)
@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
 
     # input("entrez quand logs terminés")
-    time.sleep(30)
+    time.sleep(60)
 
     print("Writing csvs and doing plots...")
 
