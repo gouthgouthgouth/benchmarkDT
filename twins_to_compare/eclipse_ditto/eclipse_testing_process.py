@@ -1,4 +1,4 @@
-from twins_to_compare.eclipse_ditto.eclipse_utils import transform_jsonld_to_ditto, put_mqtt_connection, send_messages, \
+from twins_to_compare.eclipse_ditto.eclipse_utils import transform_jsonld_to_ditto, put_mqtt_connection, \
     put_policy, put_thing
 from scripts.sensor_measurements_simulator import send_messages
 

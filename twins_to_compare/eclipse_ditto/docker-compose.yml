@@ -9,3 +9,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
     command: ["sh", "-c", "./root/setup.sh"]
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4g
