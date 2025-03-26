@@ -2,8 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timezone
 
-def plot_courbe_delay(file_datetime, beginning):
-    result_file = "/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/ditto/results/" + file_datetime + "-delays.csv"
+def plot_courbe_delay(file_datetime, beginning, dt_solution="ditto"):
+    result_file = f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/results/" + file_datetime + "-delays.csv"
 
     # Charger le CSV
     df = pd.read_csv(result_file)
@@ -25,11 +25,11 @@ def plot_courbe_delay(file_datetime, beginning):
     plt.grid(True)
     plt.legend()
     plt.gcf().autofmt_xdate()
-    plt.savefig(f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/ditto/results/{file_datetime}-delays-plot.png")
-    print(f"Plot saved as results/{file_datetime}-delays-plot.png")
+    plt.savefig(f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_datetime}-delays-plot.png")
+    print(f"Plot saved as {dt_solution}/results/{file_datetime}-delays-plot.png")
 
-def plot_courbe_cpuram(file_datetime, beginning):
-    result_file = f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/ditto/measures/{file_datetime}-cpu_ram_sum"
+def plot_courbe_cpuram(file_datetime, beginning, dt_solution="ditto"):
+    result_file = f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/measures/{file_datetime}-cpu_ram_sum"
 
     # Charger le CSV
     df = pd.read_csv(result_file)
@@ -47,8 +47,8 @@ def plot_courbe_cpuram(file_datetime, beginning):
     plt.title("CPU usage over time")
     plt.grid(True)
     plt.legend()
-    plt.savefig(f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/ditto/results/{file_datetime}-cpu-plot.png")
-    print(f"CPU plot saved as {file_datetime}-cpu-plot.png")
+    plt.savefig(f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_datetime}-cpu-plot.png")
+    print(f"CPU plot saved as {dt_solution}/{file_datetime}-cpu-plot.png")
 
     # Tracer RAM
     plt.figure(figsize=(12, 6))
@@ -58,5 +58,5 @@ def plot_courbe_cpuram(file_datetime, beginning):
     plt.title("RAM usage over time")
     plt.grid(True)
     plt.legend()
-    plt.savefig(f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/ditto/results/{file_datetime}-ram-plot.png")
-    print(f"RAM plot saved as {file_datetime}-ram-plot.png")
+    plt.savefig(f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_datetime}-ram-plot.png")
+    print(f"RAM plot saved as {dt_solution}/{file_datetime}-ram-plot.png")

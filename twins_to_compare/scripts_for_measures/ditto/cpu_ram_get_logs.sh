@@ -8,7 +8,6 @@ CONTAINERS=(
   docker-ditto-ui-1
   docker-mongodb-1
   docker-things-1
-  mosquitto
   docker-nginx-1
   docker-swagger-ui-1
 )

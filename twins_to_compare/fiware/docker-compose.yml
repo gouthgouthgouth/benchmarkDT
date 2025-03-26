@@ -42,7 +42,7 @@ services:
       - IOTA_TIMESTAMP=true
       - IOTA_AUTOCAST=true
       - IOTA_DEFAULT_RESOURCE=/iot/json
-      - IOTA_TRANSPORT=HTTP
+      - IOTA_TRANSPORT=MQTT
       - IOTA_REGISTRY_TYPE=mongodb
       - IOTA_MONGO_HOST=mongodb
       - IOTA_MONGO_PORT=27017

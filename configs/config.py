@@ -1,7 +1,7 @@
 
 RAM_LIMIT="2g"
 CPU_LIMIT="2.0"
-MQTT_BROKER = "localhost"
+MQTT_BROKER = "mosquitto"
 MQTT_PORT = 1883
 MQTT_TOPIC = "sensor/data"
 CONNECTION_ID = "mosquitto_connection"
@@ -16,7 +16,7 @@ fiware_config_data = {
     "fiware_servicepath" : "/",
     "apikey" : "apikey123",
     "default_resource" : "/iot/json",
-    "transport" : "HTTP",
+    "transport" : "MQTT",
     "sensor_entity_type" : "TrafficFlowSensor",
     "trafficFlowSensor_attributes" : [
         {"object_id": "c", "name": "carTrafficFlow", "type": "Integer"},

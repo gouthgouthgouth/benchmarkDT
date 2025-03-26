@@ -1,11 +1,9 @@
 import json
-import time
 
 import requests
 
 from configs.config import fiware_config_data, RAM_LIMIT, CPU_LIMIT
-from scripts.sensor_measurements_simulator import create_measurement_ul
-from scripts.utils import run_container, print_time, stop_container, start_container, get_road_segments_from_json
+from scripts.utils import run_container, print_time, stop_container, start_container
 
 
 def fiware_initialize_containers():
@@ -29,12 +27,16 @@ def fiware_stop_and_clean_containers():
     stop_container(container_name)
     stop_container("mongo-db")
 
-def add_road_segments(road_segments):
+def add_road_segments(road_segments, fiware_service, fiware_servicepath):
     url = fiware_config_data["CBROKER_ADDRESS"] + "ngsi-ld/v1/entities/"
 
     for segment in road_segments:
         try:
-            headers = {"Content-Type": "application/ld+json"}
+            headers = {
+                "Content-Type": "application/ld+json",
+                "fiware-service": fiware_service,
+                "fiware-servicepath": fiware_servicepath
+            }
             response = requests.post(url, headers=headers, json=segment)
 
             if response.status_code == 201:
@@ -88,7 +90,8 @@ def create_iot_service(apikey, entity_type, resource, fiware_service, fiware_ser
         return None
 
 
-def create_iot_device(id, entity_type, apikey, transport, attributes, static_attributes, fiware_service, fiware_servicepath, protocol="PDI-IoTA-UltraLight"):
+def create_iot_device(id, entity_type, apikey, transport, attributes, static_attributes,
+                      fiware_service, fiware_servicepath, protocol="PDI-IoTA-UltraLight"):
     """
     Create an IoT device in the FIWARE IoT Agent.
 
@@ -142,7 +145,8 @@ def create_iot_device(id, entity_type, apikey, transport, attributes, static_att
         print_time(f"Failed to create device {entity_type}{str(id)} because of error : {e}")
         return None
 
-def get_entity(entity_id, entity_type, fiware_service=fiware_config_data["fiware_service"], key_values_only=False):
+
+def get_entity(entity_id, entity_type, fiware_service=None, fiware_servicepath=None, key_values_only=False):
     """
     Get an entity from the FIWARE Context Broker.
 
@@ -166,8 +170,10 @@ def get_entity(entity_id, entity_type, fiware_service=fiware_config_data["fiware
     if key_values_only:
         params["options"] = "keyValues"
 
-    if fiware_service:
+    if fiware_service is not None and fiware_servicepath is not None:
         headers["NGSILD-Tenant"] = fiware_service
+        headers["fiware-service"] = fiware_service
+        headers["fiware-servicepath"] = fiware_servicepath
 
     try:
         response = requests.get(url, params=params, headers=headers, data=payload)
@@ -177,6 +183,33 @@ def get_entity(entity_id, entity_type, fiware_service=fiware_config_data["fiware
     except requests.exceptions.RequestException as e:
         print(f"Failed to retrieve entity: {e}")
         return None
+
+# def add_subscription(subscription_id, entities_id, entities_type):
+#     payload = {
+#         "id": subscription_id,
+#         "type": "Subscription",
+#         "entities": [
+#             {
+#             "id": f"urn:ngsi-ld:{entities_type}:{entity_id}",
+#             "type": entities_type
+#         } for entity_id in entities_id
+#         ],
+#         "watchedAttributes": ["brandName"],
+#            "q":"brandName!=Mercedes",
+#         "notification": {
+#         "attributes": ["brandName"],
+#         "format": "keyValues",
+#         "endpoint": {
+#         "uri": "mqtt://localhost:1883/notify",
+#         "accept": "application/json",
+#         "notifierinfo": {
+#          "version" : "mqtt5.0",
+#          "qos" : 0
+#         }
+#         }
+#         }
+#         }
+
 
 def create_traffic_flow_measurement(device_id, car_traffic_flow, truck_traffic_flow):
     """
@@ -211,10 +244,11 @@ def create_traffic_flow_measurement(device_id, car_traffic_flow, truck_traffic_f
         print(f"Failed to send measurement: {e}")
         return None
 
-def create_road_segments_and_sensors(input_file_json, nb_required=100):
-
-    road_segments = get_road_segments_from_json(input_file_json, number_required=nb_required)
-    add_road_segments(road_segments)
+def create_road_segments_and_sensors(road_segments):
+    add_road_segments(road_segments,
+                      fiware_service=fiware_config_data["fiware_service"],
+                      fiware_servicepath=fiware_config_data["fiware_servicepath"]
+                      )
 
     create_iot_service(apikey=fiware_config_data["apikey"],
                                   entity_type=fiware_config_data["sensor_entity_type"],
@@ -251,16 +285,3 @@ def create_road_segments_and_sensors(input_file_json, nb_required=100):
                           fiware_service=fiware_config_data["fiware_service"],
                           fiware_servicepath=fiware_config_data["fiware_servicepath"],
                           protocol="PDI-IoTA-UltraLight")
-
-
-def create_measures_ultralight():
-    t0 = time.time()
-    for i in range(1, 45):
-        device_id = fiware_config_data["sensor_entity_type"] + str(i)
-        car_traffic_flow = 1
-        truck_traffic_flow = 1
-        create_measurement(device_id, car_traffic_flow, truck_traffic_flow)
-
-    response = get_entity(entity_id="RoadSegment3", entity_type="RoadSegment")
-    print_time(response.text)
-    print_time("Temps total d'envoi des mesures : " + str(round(time.time() - t0, 2)) + "s")

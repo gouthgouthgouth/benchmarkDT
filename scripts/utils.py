@@ -18,18 +18,6 @@ def run_command(command_list):
     return result.stdout.strip()
 
 
-def clean_environment():
-    print_time("⚠️ WARNING: This will delete all unused Docker images, containers, and volumes!")
-    confirmation = input("Do you really want to proceed? (yes/no): ")
-
-    if confirmation.lower() == "yes":
-        print_time("🧹 Cleaning Docker environment...")
-        run_command(["docker", "system", "prune", "-a", "--volumes", "-f"])
-        print_time("✅ Docker environment cleaned.")
-    else:
-        print_time("❌ Cleaning cancelled.")
-
-
 def run_container(container_name, image_name, ram_limit="512m", cpu_limit="1", port_mapping="1026:1026",
                   volume_mapping=None):
     """Run a container with resource limits and optional volume mapping."""

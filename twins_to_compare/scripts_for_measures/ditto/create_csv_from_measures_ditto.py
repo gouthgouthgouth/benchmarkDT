@@ -3,7 +3,7 @@ import csv
 import os
 from datetime import datetime
 
-def write_csvs(file_datetime):
+def write_csvs_ditto(file_datetime):
     dt = datetime.strptime(file_datetime, "%Y-%m-%d_%H-%M-%S")
 
     cpu_ram_logfile = "twins_to_compare/scripts_for_measures/ditto/measures/" + file_datetime + "-cpu_ram"

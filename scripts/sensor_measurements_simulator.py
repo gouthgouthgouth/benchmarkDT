@@ -9,8 +9,7 @@ import json
 from configs.config import fiware_config_data, MQTT_TOPIC, MQTT_PORT, MQTT_BROKER, eclipse_config_data
 from scripts.utils import print_time
 
-
-def create_measurement_ul(device_id, car_traffic_flow, truck_traffic_flow):
+def create_measurement_http(device_id, car_traffic_flow, truck_traffic_flow):
     """
     Send a measurement update to the IoT Agent.
 
@@ -44,26 +43,7 @@ def create_measurement_ul(device_id, car_traffic_flow, truck_traffic_flow):
         print_time(f"Failed to send measurement: {e}")
         return None
 
-def create_measurement_mqtt(car_traffic_flow, truck_traffic_flow, thing_id):
-    MQTT_TOPIC = f"{eclipse_config_data["NAMESPACE"]}/{thing_id.split(":")[-1]}/things/twin/commands/modify"
-    sensor_data = {
-        "topic": MQTT_TOPIC,
-        "path": "/attributes/trafficFlow/value",
-        "value": {
-            "measuredAt": datetime.now(UTC).isoformat(),
-            "carTrafficFlow": car_traffic_flow,
-            "truckTrafficFlow": truck_traffic_flow
-        }
-    }
-    client = mqtt.Client()
-    client.username_pw_set("devops", "foobar")
-    client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
-    payload = json.dumps(sensor_data)
-    client.publish(MQTT_TOPIC, payload)
-    print_time(f"📡 Sent: {payload}")
-    client.disconnect()
-
-def send_messages_uniformlaw(things, msg_frequency_hz, nb_seconds, start_time):
+def send_messages_uniformlaw_ditto(things, msg_frequency_hz, nb_seconds, start_time):
     data = {
         "path": "/attributes/trafficFlow/value",
         "value": {
@@ -116,6 +96,107 @@ def send_messages_uniformlaw(things, msg_frequency_hz, nb_seconds, start_time):
         client.disconnect()
 
     print_time("All messages have been sent")
+
+def send_messages_uniformlaw_fiware(device_ids, resource, apikey, msg_frequency_hz, nb_seconds, start_time):
+        payload = f"c|10|t|10"
+
+        next_time = time.perf_counter()
+        interval = 1 / (msg_frequency_hz)
+        nb_messages = nb_seconds * msg_frequency_hz
+
+        client = mqtt.Client()
+        client.connect(host="localhost", keepalive=60)
+
+        sent = 0
+
+        print_time("Sending messages...")
+
+        sleep_time = (start_time - datetime.now(timezone.utc)).total_seconds()
+        time.sleep(sleep_time)
+
+        i = 1
+
+        try:
+            while not sent >= nb_messages:
+                client.publish(topic=f"/ul/{apikey}/{device_ids[i]}/attrs", payload=payload)
+
+                # attendre précisément jusqu'au prochain envoi
+                next_time += interval
+                sleep_time = next_time - time.perf_counter()
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
+
+                sent += 1
+
+                if i < len(device_ids) - 1:
+                    i += 1
+                else:
+                    i = 0
+
+        except KeyboardInterrupt:
+            client.loop_stop()
+            client.disconnect()
+
+        print_time("All messages have been sent")
+
+
+def send_messages_uniformlaw(devices, dt_solution, nb_entities, msg_frequency_hz, nb_seconds, start_time):
+    client = mqtt.Client()
+    if dt_solution == "scorpio":
+        device_ids = [device["id"].split(":")[-1] for device in devices]
+        data = f"c|10|t|10"
+        MQTT_BROKER = "localhost"
+    elif dt_solution == "ditto":
+        device_ids = [thing['thingId'] for thing in devices]
+        payload = {
+            "path": "/attributes/trafficFlow/value",
+            "value": {
+                "measuredAt": datetime.now(UTC).isoformat(),
+                "carTrafficFlow": 10,
+                "truckTrafficFlow": 10
+            }
+        }
+        client.username_pw_set("devops", "foobar")
+
+    next_time = time.perf_counter()
+    interval = 1 / (msg_frequency_hz)
+    nb_messages = nb_seconds * msg_frequency_hz
+    sent = 0
+    i = 0
+    print_time("Sending messages...")
+
+    sleep_time = (start_time - datetime.now(timezone.utc)).total_seconds()
+    time.sleep(sleep_time)
+    client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
+
+    try:
+        while not sent >= nb_messages:
+            if dt_solution == "ditto":
+                payload["value"]["measuredAt"] = datetime.now(UTC).isoformat()
+                MQTT_TOPIC = f"my.namespace/{device_ids[i]}/things/twin/commands/modify"
+                payload["topic"] = MQTT_TOPIC
+                data = json.dumps(payload)
+            elif dt_solution == "scorpio":
+                MQTT_TOPIC = f"/ul/{fiware_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+            client.publish(MQTT_TOPIC, data)
+
+            # attendre précisément jusqu'au prochain envoi
+            next_time += interval
+            sleep_time = next_time - time.perf_counter()
+            if sleep_time > 0:
+                time.sleep(sleep_time)
+            sent += 1
+            if i < len(device_ids) - 1:
+                i += 1
+            else:
+                i = 0
+
+    except KeyboardInterrupt:
+        client.loop_stop()
+        client.disconnect()
+
+    print_time("All messages have been sent")
+
 
 def send_messages_poissonlaw(things, poisson_lambda, nb_seconds, start_time):
     data = {
