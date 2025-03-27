@@ -28,7 +28,7 @@ def plot_courbe_delay(file_datetime, beginning, dt_solution="ditto"):
     plt.savefig(f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_datetime}-delays-plot.png")
     print(f"Plot saved as {dt_solution}/results/{file_datetime}-delays-plot.png")
 
-def plot_courbe_cpuram(file_datetime, beginning, dt_solution="ditto"):
+def plot_courbe_cpuram(file_datetime, file_name, beginning, dt_solution="ditto"):
     result_file = f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/measures/{file_datetime}-cpu_ram_sum"
 
     # Charger le CSV
@@ -47,8 +47,8 @@ def plot_courbe_cpuram(file_datetime, beginning, dt_solution="ditto"):
     plt.title("CPU usage over time")
     plt.grid(True)
     plt.legend()
-    plt.savefig(f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_datetime}-cpu-plot.png")
-    print(f"CPU plot saved as {dt_solution}/{file_datetime}-cpu-plot.png")
+    plt.savefig(f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_name}-cpu-plot.png")
+    print(f"CPU plot saved as {dt_solution}/{file_name}-cpu-plot.png")
 
     # Tracer RAM
     plt.figure(figsize=(12, 6))
@@ -58,5 +58,5 @@ def plot_courbe_cpuram(file_datetime, beginning, dt_solution="ditto"):
     plt.title("RAM usage over time")
     plt.grid(True)
     plt.legend()
-    plt.savefig(f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_datetime}-ram-plot.png")
-    print(f"RAM plot saved as {dt_solution}/{file_datetime}-ram-plot.png")
+    plt.savefig(f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_name}-ram-plot.png")
+    print(f"RAM plot saved as {dt_solution}/{file_name}-ram-plot.png")

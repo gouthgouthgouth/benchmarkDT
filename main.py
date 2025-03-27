@@ -106,7 +106,7 @@ def make_measurements(dt_solution, create_entities_before_measures=False, nb_sec
     print_time("Writing csvs and doing plots...")
     write_csvs(file_datetime, dt_solution=dt_solution, file_name=file_name)
     plot_courbe_delay(file_name, beginning=start_time, dt_solution=dt_solution)
-    plot_courbe_cpuram(file_name, beginning=start_time, dt_solution=dt_solution)
+    plot_courbe_cpuram(file_datetime, file_name, beginning=start_time, dt_solution=dt_solution)
 
 
 
