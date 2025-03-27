@@ -62,16 +62,17 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
         client.username_pw_set("devops", "foobar")
         MQTT_BROKER = "localhost"
 
-    next_time = time.perf_counter()
+
+    client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
     interval = 1 / (msg_frequency_hz)
     nb_messages = nb_seconds * msg_frequency_hz
     sent = 0
     i = 0
-    print_time("Sending messages...")
-
     sleep_time = (start_time - datetime.now(timezone.utc)).total_seconds()
     time.sleep(sleep_time)
-    client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
+
+    next_time = time.perf_counter()
+    print_time("Sending messages...")
 
     try:
         while not sent >= nb_messages:
@@ -124,9 +125,6 @@ def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, s
 
     print_time("Sending messages with Poisson intervals...")
     t0 = time.time()
-
-    interval = np.random.exponential(1 / poisson_lambda)
-    time.sleep(interval)
     i = 0
 
     client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
