@@ -1,9 +1,9 @@
 #!/bin/bash
 
 CONTAINERS=(
-  fiware-iot-agent-1
-  fiware-scorpio-1
-  fiware-postgres-1
+  scorpio-iot-agent-1
+  scorpio-scorpio-1
+  scorpio-postgres-1
   db-mongo
 )
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONTAINER_NAME="fiware-iot-agent-1"
+CONTAINER_NAME="scorpio-iot-agent-1"
 OUTPUT_FILE=./twins_to_compare/scripts_for_measures/scorpio/measures/"$1-entities"
 
 if [ -z "$CONTAINER_NAME" ] || [ -z "$OUTPUT_FILE" ]; then

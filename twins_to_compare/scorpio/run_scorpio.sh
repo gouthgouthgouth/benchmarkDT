@@ -4,9 +4,9 @@
 MOSQUITTO_DOCKER_COMPOSE_LOCATION="/home/gauthier-le-tat/PycharmProjects/benchmarkDT/mosquitto"
 FIWARE_DOCKER_COMPOSE_LOCATION="/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scorpio"
 MOSQUITTO_CONTAINER="mosquitto"
-SCORPIO_CONTAINER="fiware-scorpio-1"
-POSTGRES_CONTAINER="fiware-postgres-1"
-IOT_AGENT_CONTAINER="fiware-iot-agent-1"
+SCORPIO_CONTAINER="scorpio-scorpio-1"
+POSTGRES_CONTAINER="scorpio-postgres-1"
+IOT_AGENT_CONTAINER="scorpio-iot-agent-1"
 MONGODB_CONTAINER="db-mongo"
 NETWORK_NAME="external_network"
 
