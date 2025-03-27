@@ -2,13 +2,13 @@ import json
 
 import requests
 
-from configs.config import fiware_config_data, RAM_LIMIT, CPU_LIMIT
+from configs.config import scorpio_config_data, RAM_LIMIT, CPU_LIMIT
 from scripts.utils import run_container, print_time, stop_container, start_container
 
 
 def fiware_initialize_containers():
-    container_name = fiware_config_data["CONTAINER_NAME"]
-    container_image = fiware_config_data["IMAGE_NAME"]
+    container_name = scorpio_config_data["CONTAINER_NAME"]
+    container_image = scorpio_config_data["IMAGE_NAME"]
     run_container(container_name, container_image, RAM_LIMIT, CPU_LIMIT)
     run_container(
         container_name="mongo-db",
@@ -20,22 +20,22 @@ def fiware_initialize_containers():
     )
 
 def fiware_start_cbroker():
-    start_container(fiware_config_data["CONTAINER_NAME"])
+    start_container(scorpio_config_data["CONTAINER_NAME"])
 
 def fiware_stop_and_clean_containers():
-    container_name = fiware_config_data["CONTAINER_NAME"]
+    container_name = scorpio_config_data["CONTAINER_NAME"]
     stop_container(container_name)
     stop_container("mongo-db")
 
 def add_road_segments(road_segments, fiware_service, fiware_servicepath):
-    url = fiware_config_data["CBROKER_ADDRESS"] + "ngsi-ld/v1/entities/"
+    url = scorpio_config_data["CBROKER_ADDRESS"] + "ngsi-ld/v1/entities/"
 
     for segment in road_segments:
         try:
             headers = {
                 "Content-Type": "application/ld+json",
-                "fiware-service": fiware_service,
-                "fiware-servicepath": fiware_servicepath
+                "scorpio-service": fiware_service,
+                "scorpio-servicepath": fiware_servicepath
             }
             response = requests.post(url, headers=headers, json=segment)
 
@@ -61,18 +61,18 @@ def create_iot_service(apikey, entity_type, resource, fiware_service, fiware_ser
         Response: The response object from the HTTP request.
     """
 
-    url = fiware_config_data["IOT_AGENT_ADDRESS"] + "iot/services"
+    url = scorpio_config_data["IOT_AGENT_ADDRESS"] + "iot/services"
 
     headers = {
         "Content-Type": "application/json",
-        "fiware-service": fiware_service,
-        "fiware-servicepath": fiware_servicepath
+        "scorpio-service": fiware_service,
+        "scorpio-servicepath": fiware_servicepath
     }
     payload = {
         "services": [
             {
                 "apikey": apikey,
-                "cbroker": fiware_config_data["CBROKER_ADDRESS"],
+                "cbroker": scorpio_config_data["CBROKER_ADDRESS"],
                 "entity_type": entity_type,
                 "resource": resource
             }
@@ -110,12 +110,12 @@ def create_iot_device(id, entity_type, apikey, transport, attributes, static_att
         Response: The response object from the HTTP request.
     """
 
-    url = fiware_config_data["IOT_AGENT_ADDRESS"] + "iot/devices"
+    url = scorpio_config_data["IOT_AGENT_ADDRESS"] + "iot/devices"
 
     headers = {
         "Content-Type": "application/json",
-        "fiware-service": fiware_service,
-        "fiware-servicepath": fiware_servicepath
+        "scorpio-service": fiware_service,
+        "scorpio-servicepath": fiware_servicepath
     }
     payload = {
         "devices": [
@@ -157,7 +157,7 @@ def get_entity(entity_id, entity_type, fiware_service=None, fiware_servicepath=N
     Returns:
         Response: The response object from the HTTP request.
     """
-    url = fiware_config_data["CBROKER_ADDRESS"] + f"ngsi-ld/v1/entities/urn:ngsi-ld:{entity_type}:{entity_id}"
+    url = scorpio_config_data["CBROKER_ADDRESS"] + f"ngsi-ld/v1/entities/urn:ngsi-ld:{entity_type}:{entity_id}"
     headers = {
         "NGSILD-Path": "/",
         'Accept': 'application/ld+json'
@@ -172,8 +172,8 @@ def get_entity(entity_id, entity_type, fiware_service=None, fiware_servicepath=N
 
     if fiware_service is not None and fiware_servicepath is not None:
         headers["NGSILD-Tenant"] = fiware_service
-        headers["fiware-service"] = fiware_service
-        headers["fiware-servicepath"] = fiware_servicepath
+        headers["scorpio-service"] = fiware_service
+        headers["scorpio-servicepath"] = fiware_servicepath
 
     try:
         response = requests.get(url, params=params, headers=headers, data=payload)
@@ -183,33 +183,6 @@ def get_entity(entity_id, entity_type, fiware_service=None, fiware_servicepath=N
     except requests.exceptions.RequestException as e:
         print(f"Failed to retrieve entity: {e}")
         return None
-
-# def add_subscription(subscription_id, entities_id, entities_type):
-#     payload = {
-#         "id": subscription_id,
-#         "type": "Subscription",
-#         "entities": [
-#             {
-#             "id": f"urn:ngsi-ld:{entities_type}:{entity_id}",
-#             "type": entities_type
-#         } for entity_id in entities_id
-#         ],
-#         "watchedAttributes": ["brandName"],
-#            "q":"brandName!=Mercedes",
-#         "notification": {
-#         "attributes": ["brandName"],
-#         "format": "keyValues",
-#         "endpoint": {
-#         "uri": "mqtt://localhost:1883/notify",
-#         "accept": "application/json",
-#         "notifierinfo": {
-#          "version" : "mqtt5.0",
-#          "qos" : 0
-#         }
-#         }
-#         }
-#         }
-
 
 def create_traffic_flow_measurement(device_id, car_traffic_flow, truck_traffic_flow):
     """
@@ -223,14 +196,14 @@ def create_traffic_flow_measurement(device_id, car_traffic_flow, truck_traffic_f
     Returns:
         Response: The response object from the HTTP request.
     """
-    url = fiware_config_data["IOT_AGENT_HTTP_ADDRESS"] + "iot/json"
+    url = scorpio_config_data["IOT_AGENT_HTTP_ADDRESS"] + "iot/json"
     headers = {
         "Content-Type": "text/plain",
-        "fiware-service": fiware_config_data["fiware_service"],
-        "fiware-servicepath": fiware_config_data["fiware_servicepath"]
+        "scorpio-service": scorpio_config_data["fiware_service"],
+        "scorpio-servicepath": scorpio_config_data["fiware_servicepath"]
     }
     params = {
-        "k": fiware_config_data["apikey"],
+        "k": scorpio_config_data["apikey"],
         "i": str(device_id)
     }
     payload = f"c|{car_traffic_flow}|t|{truck_traffic_flow}"
@@ -246,15 +219,15 @@ def create_traffic_flow_measurement(device_id, car_traffic_flow, truck_traffic_f
 
 def create_road_segments_and_sensors(road_segments):
     add_road_segments(road_segments,
-                      fiware_service=fiware_config_data["fiware_service"],
-                      fiware_servicepath=fiware_config_data["fiware_servicepath"]
+                      fiware_service=scorpio_config_data["fiware_service"],
+                      fiware_servicepath=scorpio_config_data["fiware_servicepath"]
                       )
 
-    create_iot_service(apikey=fiware_config_data["apikey"],
-                                  entity_type=fiware_config_data["sensor_entity_type"],
-                                  resource=fiware_config_data["default_resource"],
-                                  fiware_service=fiware_config_data["fiware_service"],
-                                  fiware_servicepath=fiware_config_data["fiware_servicepath"])
+    create_iot_service(apikey=scorpio_config_data["apikey"],
+                                  entity_type=scorpio_config_data["sensor_entity_type"],
+                                  resource=scorpio_config_data["default_resource"],
+                                  fiware_service=scorpio_config_data["fiware_service"],
+                                  fiware_servicepath=scorpio_config_data["fiware_servicepath"])
     sensor_id_counter = 0
     for segment in road_segments:
         sensor_id_counter += 1
@@ -277,11 +250,11 @@ def create_road_segments_and_sensors(road_segments):
         ]
 
         create_iot_device(id=sensor_id_counter,
-                          entity_type=fiware_config_data["sensor_entity_type"],
-                          apikey=fiware_config_data["apikey"],
-                          transport=fiware_config_data["transport"],
-                          attributes=fiware_config_data["trafficFlowSensor_attributes"],
+                          entity_type=scorpio_config_data["sensor_entity_type"],
+                          apikey=scorpio_config_data["apikey"],
+                          transport=scorpio_config_data["transport"],
+                          attributes=scorpio_config_data["trafficFlowSensor_attributes"],
                           static_attributes=static_attributes,
-                          fiware_service=fiware_config_data["fiware_service"],
-                          fiware_servicepath=fiware_config_data["fiware_servicepath"],
+                          fiware_service=scorpio_config_data["fiware_service"],
+                          fiware_servicepath=scorpio_config_data["fiware_servicepath"],
                           protocol="PDI-IoTA-UltraLight")

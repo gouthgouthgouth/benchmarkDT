@@ -6,7 +6,7 @@ MQTT_PORT = 1883
 MQTT_TOPIC = "sensor/data"
 CONNECTION_ID = "mosquitto_connection"
 
-fiware_config_data = {
+scorpio_config_data = {
     "CONTAINER_NAME" : "fiware-scorpio",
     "IMAGE_NAME" : "fiware/scorpio",
     "CBROKER_ADDRESS" : "http://localhost:9090/",

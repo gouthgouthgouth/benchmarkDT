@@ -1,5 +1,4 @@
 import json
-import time
 from copy import deepcopy
 
 import requests
@@ -89,34 +88,6 @@ def get_thing(thing_id):
     else:
         print_time(f"Error: {response.text}")
 
-# def update_feature(thing_id, feature_to_update, value):
-#     url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/things/{thing_id}/features/{feature_to_update}/properties/value"
-#     HEADERS = {
-#         "Content-Type": "application/json",
-#         "Accept": "application/json",
-#     }
-#     data = json.dumps({"value": value})
-#     response = requests.put(url, headers=HEADERS, data=data, auth=HTTPBasicAuth('devops', 'foobar'))
-#     if response.status_code == 200:
-#         print_time(f"Feature updated successfully on thing of id {thing_id}")
-#     else:
-#         print_time(f"Error, couldn't update feature {feature_to_update} on thing {thing_id} : {response.text}")
-
-# def delete_thing(thing_id, delete_policy_as_well=False):
-#     url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/things/{thing_id}"
-#     HEADERS = {
-#         "Content-Type": "application/json",
-#         "Accept": "application/json",
-#     }
-#     params = {"thingId" : f"{thing_id}"}
-#     response = requests.delete(url, headers=HEADERS, params=params, auth=HTTPBasicAuth('devops', 'foobar'))
-#     if response.status_code == 204:
-#         print_time(f"Thing of id {thing_id} deleted successfully!")
-#     else:
-#         print_time(f"Error, thing of id {thing_id} couldn't be deleted : {response.text}")
-#     if delete_policy_as_well:
-#         delete_policy(thing_id)
-
 def put_policy(policy_id):
     url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/policies/{policy_id}"
     HEADERS = {
@@ -148,32 +119,6 @@ def put_policy(policy_id):
     else:
         print_time(f"Error, policy of id {policy_id} couldn't be created : {response.text}")
 
-# def get_policy(policy_id):
-#     url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/policies/{policy_id}"
-#     HEADERS = {
-#         "Content-Type": "application/json",
-#         "Accept": "application/json",
-#     }
-#     params = {"policyId" : f"{policy_id}"}
-#     response = requests.get(url, headers=HEADERS, params=params, auth=HTTPBasicAuth('devops', 'foobar'))
-#     if response.status_code == 200:
-#         return response.json()
-#     else:
-#         print_time(f"Error: {response.text}")
-
-# def delete_policy(policy_id):
-#     url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/policies/{policy_id}"
-#     HEADERS = {
-#         "Content-Type": "application/json",
-#         "Accept": "application/json",
-#     }
-#     params = {"policyId" : f"{policy_id}"}
-#     response = requests.delete(url, headers=HEADERS, params=params, auth=HTTPBasicAuth('devops', 'foobar'))
-#     if response.status_code == 204:
-#         print_time(f"Policy of id {policy_id} deleted successfully!")
-#     else:
-#         print_time(f"Error, policy of id {policy_id} couldn't be deleted : {response.text}")
-
 def put_mqtt_connection():
     url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/connections/mqtt_connection"
     HEADERS = {
@@ -191,23 +136,7 @@ def put_mqtt_connection():
             {
                 "addresses": ["my.namespace/#"],  # ✅ Subscribe to correct topic
                 "authorizationContext": ["nginx:devops"],
-                "qos": 1,
-                # "headerMapping": {
-                #     "mqtt.topic": "{{ header:mqtt.topic }}"
-                # },
-                # "payloadMapping": [
-                #     {
-                #         "type": "json",
-                #         "mapping": {
-                #             "path": "/attributes",
-                #             "value": {
-                #                 # "thingId": "{{ json:thingId }}",  # ✅ Correctly extracts Thing ID
-                #                 "attributes/carTrafficFlow": "{{ json:carTrafficFlow }}",  # ✅ Maps car traffic
-                #                 "attributes/truckTrafficFlow": "{{ json:truckTrafficFlow }}",  # ✅ Maps truck traffic
-                #             }
-                #         }
-                #     }
-                # ]
+                "qos": 1
             }
         ]
     }
@@ -218,5 +147,3 @@ def put_mqtt_connection():
         print_time("✅ MQTT Connection configured successfully!")
     else:
         print_time(f"❌ Error configuring MQTT connection: {response.text}")
-
-# def send_messages(ditto_things, msg_frequency):

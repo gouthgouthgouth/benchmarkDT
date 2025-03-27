@@ -1,23 +1,24 @@
 import re
 import csv
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
-def write_csvs(file_datetime, dt_solution):
+
+def write_csvs(file_datetime, dt_solution, file_name):
     if dt_solution == "ditto":
-        write_csvs_ditto(file_datetime)
+        write_csvs_ditto(file_datetime, file_name)
     elif dt_solution == "scorpio":
-        write_csvs_scorpio(file_datetime)
+        write_csvs_scorpio(file_datetime, file_name)
 
-def write_csvs_ditto(file_datetime):
+def write_csvs_ditto(file_datetime, file_name):
     dt = datetime.strptime(file_datetime, "%Y-%m-%d_%H-%M-%S")
 
     cpu_ram_logfile = "twins_to_compare/scripts_for_measures/ditto/measures/" + file_datetime + "-cpu_ram"
     mosquitto_logfile = "twins_to_compare/scripts_for_measures/ditto/measures/" + file_datetime + "-mosquitto"
     things_logfile = "twins_to_compare/scripts_for_measures/ditto/measures/" + file_datetime + "-things"
-    output_csv_things = f"twins_to_compare/scripts_for_measures/ditto/measures_csv/{file_datetime}-things.csv"
-    output_csv_mosquitto = f"twins_to_compare/scripts_for_measures/ditto/measures_csv/{file_datetime}-mosquitto.csv"
-    result_file = "twins_to_compare/scripts_for_measures/ditto/results/" + file_datetime + "-delays.csv"
+    output_csv_things = f"twins_to_compare/scripts_for_measures/ditto/measures_csv/{file_name}-things.csv"
+    output_csv_mosquitto = f"twins_to_compare/scripts_for_measures/ditto/measures_csv/{file_name}-mosquitto.csv"
+    result_file = "twins_to_compare/scripts_for_measures/ditto/results/" + file_name + "-delays.csv"
 
     os.makedirs("twins_to_compare/scripts_for_measures/ditto/measures_csv", exist_ok=True)
 
@@ -96,15 +97,15 @@ def write_csvs_ditto(file_datetime):
             writer.writerow([mosquitto_messages[(thing_id, occurence)], message_id, delay])
 
 
-def write_csvs_scorpio(file_datetime):
+def write_csvs_scorpio(file_datetime, file_name):
     dt = datetime.strptime(file_datetime, "%Y-%m-%d_%H-%M-%S")
 
     cpu_ram_logfile = "twins_to_compare/scripts_for_measures/scorpio/measures/" + file_datetime + "-cpu_ram"
     mosquitto_logfile = "twins_to_compare/scripts_for_measures/scorpio/measures/" + file_datetime + "-mosquitto"
     things_logfile = "twins_to_compare/scripts_for_measures/scorpio/measures/" + file_datetime + "-entities"
-    output_csv_things = f"twins_to_compare/scripts_for_measures/scorpio/measures_csv/{file_datetime}-entities.csv"
-    output_csv_mosquitto = f"twins_to_compare/scripts_for_measures/scorpio/measures_csv/{file_datetime}-mosquitto.csv"
-    result_file = "twins_to_compare/scripts_for_measures/scorpio/results/" + file_datetime + "-delays.csv"
+    output_csv_things = f"twins_to_compare/scripts_for_measures/scorpio/measures_csv/{file_name}-entities.csv"
+    output_csv_mosquitto = f"twins_to_compare/scripts_for_measures/scorpio/measures_csv/{file_name}-mosquitto.csv"
+    result_file = "twins_to_compare/scripts_for_measures/scorpio/results/" + file_name + "-delays.csv"
 
     os.makedirs("twins_to_compare/scripts_for_measures/scorpio/measures_csv", exist_ok=True)
 
