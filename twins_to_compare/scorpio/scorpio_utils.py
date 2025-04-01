@@ -3,29 +3,7 @@ import json
 import requests
 
 from configs.config import scorpio_config_data, RAM_LIMIT, CPU_LIMIT
-from scripts.utils import run_container, print_time, stop_container, start_container
-
-
-def fiware_initialize_containers():
-    container_name = scorpio_config_data["CONTAINER_NAME"]
-    container_image = scorpio_config_data["IMAGE_NAME"]
-    run_container(container_name, container_image, RAM_LIMIT, CPU_LIMIT)
-    run_container(
-        container_name="mongo-db",
-        image_name="mongo",
-        ram_limit=RAM_LIMIT,
-        cpu_limit=CPU_LIMIT,
-        port_mapping="27017:27017",
-        volume_mapping=f"{container_name}-data:/data/db"
-    )
-
-def fiware_start_cbroker():
-    start_container(scorpio_config_data["CONTAINER_NAME"])
-
-def fiware_stop_and_clean_containers():
-    container_name = scorpio_config_data["CONTAINER_NAME"]
-    stop_container(container_name)
-    stop_container("mongo-db")
+from scripts.utils import print_time
 
 def add_road_segments(road_segments, fiware_service, fiware_servicepath):
     url = scorpio_config_data["CBROKER_ADDRESS"] + "ngsi-ld/v1/entities/"
@@ -34,8 +12,8 @@ def add_road_segments(road_segments, fiware_service, fiware_servicepath):
         try:
             headers = {
                 "Content-Type": "application/ld+json",
-                "scorpio-service": fiware_service,
-                "scorpio-servicepath": fiware_servicepath
+                "fiware-service": fiware_service,
+                "fiware-servicepath": fiware_servicepath
             }
             response = requests.post(url, headers=headers, json=segment)
 
@@ -65,8 +43,8 @@ def create_iot_service(apikey, entity_type, resource, fiware_service, fiware_ser
 
     headers = {
         "Content-Type": "application/json",
-        "scorpio-service": fiware_service,
-        "scorpio-servicepath": fiware_servicepath
+        "fiware-service": fiware_service,
+        "fiware-servicepath": fiware_servicepath
     }
     payload = {
         "services": [
@@ -114,8 +92,8 @@ def create_iot_device(id, entity_type, apikey, transport, attributes, static_att
 
     headers = {
         "Content-Type": "application/json",
-        "scorpio-service": fiware_service,
-        "scorpio-servicepath": fiware_servicepath
+        "fiware-service": fiware_service,
+        "fiware-servicepath": fiware_servicepath
     }
     payload = {
         "devices": [
@@ -172,8 +150,8 @@ def get_entity(entity_id, entity_type, fiware_service=None, fiware_servicepath=N
 
     if fiware_service is not None and fiware_servicepath is not None:
         headers["NGSILD-Tenant"] = fiware_service
-        headers["scorpio-service"] = fiware_service
-        headers["scorpio-servicepath"] = fiware_servicepath
+        headers["fiware-service"] = fiware_service
+        headers["fiware-servicepath"] = fiware_servicepath
 
     try:
         response = requests.get(url, params=params, headers=headers, data=payload)
@@ -199,8 +177,8 @@ def create_traffic_flow_measurement(device_id, car_traffic_flow, truck_traffic_f
     url = scorpio_config_data["IOT_AGENT_HTTP_ADDRESS"] + "iot/json"
     headers = {
         "Content-Type": "text/plain",
-        "scorpio-service": scorpio_config_data["fiware_service"],
-        "scorpio-servicepath": scorpio_config_data["fiware_servicepath"]
+        "fiware-service": scorpio_config_data["fiware_service"],
+        "fiware-servicepath": scorpio_config_data["fiware_servicepath"]
     }
     params = {
         "k": scorpio_config_data["apikey"],
@@ -217,7 +195,7 @@ def create_traffic_flow_measurement(device_id, car_traffic_flow, truck_traffic_f
         print(f"Failed to send measurement: {e}")
         return None
 
-def create_road_segments_and_sensors(road_segments):
+def scorpio_create_road_segments_and_sensors(road_segments):
     add_road_segments(road_segments,
                       fiware_service=scorpio_config_data["fiware_service"],
                       fiware_servicepath=scorpio_config_data["fiware_servicepath"]

@@ -6,7 +6,8 @@ import requests
 import paho.mqtt.client as mqtt
 import json
 
-from configs.config import scorpio_config_data, MQTT_TOPIC, MQTT_PORT, MQTT_BROKER, eclipse_config_data
+from configs.config import scorpio_config_data, MQTT_TOPIC, MQTT_PORT, MQTT_BROKER, eclipse_config_data, \
+    orion_config_data
 from scripts.utils import print_time
 
 def create_measurement_http(device_id, car_traffic_flow, truck_traffic_flow):
@@ -25,8 +26,8 @@ def create_measurement_http(device_id, car_traffic_flow, truck_traffic_flow):
     url = scorpio_config_data["IOT_AGENT_HTTP_ADDRESS"] + "iot/json"
     headers = {
         "Content-Type": "text/plain",
-        "scorpio-service": scorpio_config_data["fiware_service"],
-        "scorpio-servicepath": scorpio_config_data["fiware_servicepath"]
+        "fiware-service": scorpio_config_data["fiware_service"],
+        "fiware-servicepath": scorpio_config_data["fiware_servicepath"]
     }
     params = {
         "k": scorpio_config_data["apikey"],
@@ -45,7 +46,7 @@ def create_measurement_http(device_id, car_traffic_flow, truck_traffic_flow):
 
 def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds, start_time):
     client = mqtt.Client()
-    if dt_solution == "scorpio":
+    if dt_solution == "scorpio" or dt_solution == "orion_ld":
         device_ids = [device["id"].split(":")[-1] for device in devices]
         data = f"c|10|t|10"
         MQTT_BROKER = "localhost"
@@ -83,6 +84,8 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
                 data = json.dumps(payload)
             elif dt_solution == "scorpio":
                 MQTT_TOPIC = f"/ul/{scorpio_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+            elif dt_solution == "orion_ld":
+                MQTT_TOPIC = f"/ul/{orion_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
             client.publish(MQTT_TOPIC, data)
 
             # attendre précisément jusqu'au prochain envoi
@@ -104,7 +107,7 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
 
 def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, start_time):
     client = mqtt.Client()
-    if dt_solution == "scorpio":
+    if dt_solution == "scorpio" or dt_solution == "orion_ld":
         device_ids = [device["id"].split(":")[-1] for device in devices]
         data = f"c|10|t|10"
         MQTT_BROKER = "localhost"
@@ -140,6 +143,8 @@ def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, s
                 data = json.dumps(payload)
             elif dt_solution == "scorpio":
                 MQTT_TOPIC = f"/ul/{scorpio_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+            elif dt_solution == "orion_ld":
+                MQTT_TOPIC = f"/ul/{orion_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
             client.publish(MQTT_TOPIC, data)
 
             interval = np.random.exponential(1 / poisson_lambda)
@@ -156,7 +161,7 @@ def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, s
 
 def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, start_time, center_ratio=0.5, sigma_ratio=0.1):
     client = mqtt.Client()
-    if dt_solution == "scorpio":
+    if dt_solution == "scorpio" or dt_solution == "orion_ld":
         device_ids = [device["id"].split(":")[-1] for device in devices]
         data = f"c|10|t|10"
         MQTT_BROKER = "localhost"
@@ -203,6 +208,8 @@ def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, sta
                 data = json.dumps(payload)
             elif dt_solution == "scorpio":
                 MQTT_TOPIC = f"/ul/{scorpio_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+            elif dt_solution == "orion_ld":
+                MQTT_TOPIC = f"/ul/{orion_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
             client.publish(MQTT_TOPIC, data)
 
             if i < len(device_ids) - 1:

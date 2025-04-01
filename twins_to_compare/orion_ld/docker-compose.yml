@@ -1,0 +1,65 @@
+services:
+  orion-ld:
+    image: fiware/orion-ld:latest
+    hostname: orion-ld
+    ports:
+      - "1026:1026"
+    command: -dbhost mongo-orion -logLevel INFO
+    depends_on:
+      - mongo-orion
+
+  mongo-orion:
+    image: mongo:4.4
+    hostname: mongo-orion
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-orion-data:/data/db
+
+  iot-agent:
+    image: fiware/iotagent-ul:latest
+    hostname: iot-agent
+    expose:
+      - "4041"
+      - "7896"
+    ports:
+      - "4041:4041"
+      - "7896:7896"
+    environment:
+      - IOTA_CB_HOST=orion-ld
+      - IOTA_CB_PORT=1026
+      - IOTA_CB_NGSI_VERSION=ld
+      - IOTA_NORTH_HOST=0.0.0.0
+      - IOTA_NORTH_PORT=4041
+      - IOTA_LOG_LEVEL=INFO
+      - IOTA_MQTT_HOST=mosquitto
+      - IOTA_MQTT_PORT=1883
+      - IOTA_HTTP_PORT=7896
+      - IOTA_TIMESTAMP=true
+      - IOTA_AUTOCAST=true
+      - IOTA_DEFAULT_RESOURCE=/iot/json
+      - IOTA_TRANSPORT=MQTT
+      - IOTA_REGISTRY_TYPE=mongodb
+      - IOTA_MONGO_HOST=mongo-iot
+      - IOTA_MONGO_PORT=27017
+      - IOTA_MONGO_DB=iotagent
+      - IOTA_PROVIDER_URL=http://iot-agent:4041
+      - IOTA_UL20_AMQP_BINDING=false
+      - IOTA_JSON_LD_CONTEXT=https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld
+      - IOTA_FALLBACK_TENANT=openiot
+      - IOTA_MULTI_CORE=true
+    depends_on:
+      - orion-ld
+      - mongo-iot
+
+  mongo-iot:
+    image: mongo:4.4
+    hostname: mongo-iot
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-iot-data:/data/db
+
+volumes:
+  mongo-orion-data:
+  mongo-iot-data:
