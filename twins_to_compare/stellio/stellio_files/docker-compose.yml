@@ -1,0 +1,104 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: timescale/timescaledb-ha:pg13-latest
+    container_name: stellio-postgres
+    environment:
+      POSTGRES_USER: stellio
+      POSTGRES_PASSWORD: stellio
+      POSTGRES_DB: stellio_search
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-initdb:/docker-entrypoint-initdb.d
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: stellio-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: stellio-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  stellio-search:
+    build:
+      context: ./search-service
+    container_name: stellio-search
+    depends_on:
+      - postgres
+      - kafka
+    ports:
+      - "1026:8080"
+    volumes:
+      - ./stellio-override.properties:/app/config/application.properties
+      - ./search-service/wait-for-postgres.sh:/wait-for-postgres.sh
+    entrypoint: ["/bin/bash", "/wait-for-postgres.sh"]
+    environment:
+      SPRING_PROFILES_ACTIVE: dev,openapi
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: stellio_search
+      DB_USER: stellio
+      DB_PASSWORD: stellio
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  iot-agent:
+    container_name: iot-agent
+    image: fiware/iotagent-ul:latest
+    hostname: iot-agent
+    expose:
+      - "4041"
+      - "7896"
+    ports:
+      - "4041:4041"
+      - "7896:7896"
+    environment:
+      - IOTA_CB_HOST=scorpio
+      - IOTA_CB_PORT=9090
+      - IOTA_CB_NGSI_VERSION=ld
+      - IOTA_NORTH_HOST=0.0.0.0
+      - IOTA_NORTH_PORT=4041
+      - IOTA_LOG_LEVEL=DEBUG
+      - IOTA_MQTT_HOST=mosquitto
+      - IOTA_MQTT_PORT=1883
+      - IOTA_HTTP_PORT=7896
+      - IOTA_TIMESTAMP=true
+      - IOTA_AUTOCAST=true
+      - IOTA_DEFAULT_RESOURCE=/iot/json
+      - IOTA_TRANSPORT=MQTT
+      - IOTA_REGISTRY_TYPE=mongodb
+      - IOTA_MONGO_HOST=mongodb
+      - IOTA_MONGO_PORT=27017
+      - IOTA_MONGO_DB=iotagent
+      - IOTA_PROVIDER_URL=http://iot-agent:4041
+      - IOTA_UL20_AMQP_BINDING=false
+      - IOTA_JSON_LD_CONTEXT=https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld
+      - IOTA_FALLBACK_TENANT=openiot
+      - IOTA_MULTI_CORE=true
+    depends_on:
+      - stellio-search
+
+  mongodb:
+    image: mongo:4.4
+    container_name: db-mongo
+    ports:
+      - "27017:27017"
+
+volumes:
+  postgres-data:

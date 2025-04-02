@@ -11,7 +11,7 @@ def plot_courbe_delay(file_datetime, beginning, dt_solution="ditto"):
     # Si la colonne s'appelle "delay" et qu'il y a un message_id que vous ne voulez pas afficher
     delays = df["delay (s)"].dropna()
     df["sent_timestamp"] = pd.to_datetime(df["sent_timestamp"], format='%Y-%m-%d %H:%M:%S.%f', errors='coerce', utc=True)
-    df["sent_timestamp"] = df["sent_timestamp"] - pd.Timedelta(hours=1)
+    df["sent_timestamp"] = df["sent_timestamp"] - pd.Timedelta(hours=2)
     df["sent_timestamp_seconds"] = (df["sent_timestamp"] - beginning).dt.total_seconds()
 
     df = df.dropna(subset=["delay (s)", "sent_timestamp"])
@@ -36,8 +36,9 @@ def plot_courbe_cpuram(file_datetime, file_name, beginning, dt_solution="ditto")
 
     # Convertir Timestamp en datetime et ajuster
     df["Timestamp"] = pd.to_datetime(df["Timestamp"], format='%Y-%m-%d %H:%M:%S.%f', errors='coerce', utc=True)
-    df["Timestamp"] = df["Timestamp"] - pd.Timedelta(hours=1)
+    df["Timestamp"] = df["Timestamp"] - pd.Timedelta(hours=2)
     df["timestamp_seconds"] = (df["Timestamp"] - beginning).dt.total_seconds()
+    df = df[df["timestamp_seconds"] > 0]
 
     # Tracer CPU
     plt.figure(figsize=(12, 6))

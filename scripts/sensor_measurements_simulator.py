@@ -1,5 +1,5 @@
 import time
-from datetime import datetime, UTC, timezone
+from datetime import datetime, timezone, timedelta
 
 import numpy as np
 import requests
@@ -9,6 +9,8 @@ import json
 from configs.config import scorpio_config_data, MQTT_TOPIC, MQTT_PORT, MQTT_BROKER, eclipse_config_data, \
     orion_config_data
 from scripts.utils import print_time
+
+tz = timezone(timedelta(hours=2))
 
 def create_measurement_http(device_id, car_traffic_flow, truck_traffic_flow):
     """
@@ -55,7 +57,7 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
         payload = {
             "path": "/attributes/trafficFlow/value",
             "value": {
-                "measuredAt": datetime.now(UTC).isoformat(),
+                "measuredAt": datetime.now(tz).isoformat(),
                 "carTrafficFlow": 10,
                 "truckTrafficFlow": 10
             }
@@ -69,7 +71,7 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
     nb_messages = nb_seconds * msg_frequency_hz
     sent = 0
     i = 0
-    sleep_time = (start_time - datetime.now(timezone.utc)).total_seconds()
+    sleep_time = (start_time - datetime.now(tz=tz)).total_seconds()
     time.sleep(sleep_time)
 
     next_time = time.perf_counter()
@@ -78,7 +80,7 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
     try:
         while not sent >= nb_messages:
             if dt_solution == "ditto":
-                payload["value"]["measuredAt"] = datetime.now(UTC).isoformat()
+                payload["value"]["measuredAt"] = datetime.now(tz=tz).isoformat()
                 MQTT_TOPIC = f"my.namespace/{device_ids[i]}/things/twin/commands/modify"
                 payload["topic"] = MQTT_TOPIC
                 data = json.dumps(payload)
@@ -116,7 +118,7 @@ def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, s
         payload = {
             "path": "/attributes/trafficFlow/value",
             "value": {
-                "measuredAt": datetime.now(UTC).isoformat(),
+                "measuredAt": datetime.now(tz=tz).isoformat(),
                 "carTrafficFlow": 10,
                 "truckTrafficFlow": 10
             }
@@ -131,13 +133,13 @@ def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, s
     i = 0
 
     client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
-    sleep_time = (start_time - datetime.now(timezone.utc)).total_seconds()
+    sleep_time = (start_time - datetime.now(tz=tz)).total_seconds()
     time.sleep(sleep_time)
 
     try:
         while time.time() - t0 < nb_seconds:
             if dt_solution == "ditto":
-                payload["value"]["measuredAt"] = datetime.now(UTC).isoformat()
+                payload["value"]["measuredAt"] = datetime.now(tz=tz).isoformat()
                 MQTT_TOPIC = f"my.namespace/{device_ids[i]}/things/twin/commands/modify"
                 payload["topic"] = MQTT_TOPIC
                 data = json.dumps(payload)
@@ -170,7 +172,7 @@ def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, sta
         payload = {
             "path": "/attributes/trafficFlow/value",
             "value": {
-                "measuredAt": datetime.now(UTC).isoformat(),
+                "measuredAt": datetime.now(tz=tz).isoformat(),
                 "carTrafficFlow": 10,
                 "truckTrafficFlow": 10
             }
@@ -188,7 +190,7 @@ def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, sta
     i = 0
     client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
 
-    sleep_time = (start_time - datetime.now(timezone.utc)).total_seconds()
+    sleep_time = (start_time - datetime.now(tz=tz)).total_seconds()
     time.sleep(sleep_time)
 
     print_time("Sending messages with gaussian time distribution...")
@@ -202,7 +204,7 @@ def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, sta
                 time.sleep(sleep_time)
 
             if dt_solution == "ditto":
-                payload["value"]["measuredAt"] = datetime.now(UTC).isoformat()
+                payload["value"]["measuredAt"] = datetime.now(tz=tz).isoformat()
                 MQTT_TOPIC = f"my.namespace/{device_ids[i]}/things/twin/commands/modify"
                 payload["topic"] = MQTT_TOPIC
                 data = json.dumps(payload)

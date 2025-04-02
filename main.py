@@ -2,7 +2,8 @@ import atexit
 import os
 import signal
 import time
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from multiprocessing import Process
 from scripts.sensor_measurements_simulator import send_messages_uniformlaw, send_messages_poissonlaw, \
     send_messages_gaussianlaw
@@ -14,6 +15,8 @@ from twins_to_compare.scripts_for_measures.get_logs import record_logs_mosquitto
     record_logs_cpu_ram_delay
 from twins_to_compare.scripts_for_measures.plot import plot_courbe_delay, plot_courbe_cpuram
 from twins_to_compare.scripts_for_measures.write_csvs import write_csvs
+
+tz = timezone(timedelta(hours=2))
 
 def create_entities(dt_solution, entities):
     if dt_solution == "ditto":
@@ -56,13 +59,14 @@ def make_measurements(dt_solution, create_entities_before_measures=False, nb_sec
 
     # Starting to record logs for context broker and mosquitto
     file_datetime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    print_time("File datetime : " + file_datetime)
     pid_list = record_logs_cpu_ram_delay(file_datetime, dt_solution=dt_solution)
     mosquitto_process = Process(target=record_logs_mosquitto, args=(file_datetime, dt_solution))
     mosquitto_process.start()
     atexit.register(cleanup, pid_list, mosquitto_process)
 
     print_time("Running tests...")
-    start_time = datetime.now(timezone.utc) + timedelta(seconds=60)
+    start_time = datetime.now(tz=tz) + timedelta(seconds=5)
 
     processes = []
 
@@ -97,7 +101,7 @@ def make_measurements(dt_solution, create_entities_before_measures=False, nb_sec
         p.start()
     for p in processes:
         p.join()
-    time.sleep(10)
+    time.sleep(5)
 
     file_name = f"{file_datetime}_{dt_solution}_{nb_entities}entities_{nb_seconds}seconds"
 
@@ -108,6 +112,11 @@ def make_measurements(dt_solution, create_entities_before_measures=False, nb_sec
     if gaussianlaw_enabled:
         file_name += f"_gausslaw_{gauss_nbmessages}nbmessages_center{center_ratio}_sigma{sigma_ratio}"
 
+    # file_datetime = "2025-04-02_10-13-01"
+    # start_time = datetime.strptime(file_datetime, "%Y-%m-%d_%H-%M-%S").replace(tzinfo=tz) + timedelta(seconds=60)
+    # # start_time.replace(tzinfo=tz)
+    # file_name = f"{file_datetime}_{dt_solution}_{nb_entities}entities_{nb_seconds}seconds"
+
     print_time("Writing csvs and doing plots...")
     write_csvs(file_datetime, dt_solution=dt_solution, file_name=file_name)
     plot_courbe_delay(file_name, beginning=start_time, dt_solution=dt_solution)
@@ -116,9 +125,9 @@ def make_measurements(dt_solution, create_entities_before_measures=False, nb_sec
 
 
 if __name__ == "__main__":
-    # dt_solution = "ditto"
+    dt_solution = "ditto"
     # dt_solution = "scorpio"
-    dt_solution = "orion_ld"
+    # dt_solution = "orion_ld"
 
     # Nombre d'entités
     nb_entities = 50
@@ -131,7 +140,7 @@ if __name__ == "__main__":
 
 
     make_measurements(dt_solution,
-                      create_entities_before_measures=True,
+                      create_entities_before_measures=False,
                       nb_seconds=nb_seconds,
 
                       uniform_law_enabled=True,
