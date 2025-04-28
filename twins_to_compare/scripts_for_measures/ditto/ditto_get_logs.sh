@@ -9,7 +9,7 @@ if [ -z "$CONTAINER_NAME" ] || [ -z "$OUTPUT_FILE" ]; then
 fi
 
 echo "Redirecting logs from container '$CONTAINER_NAME' to file '$OUTPUT_FILE'..."
-docker logs -f --since 0s "$CONTAINER_NAME" &> "$OUTPUT_FILE" &
+docker logs -f --since 0s "$CONTAINER_NAME" > "$OUTPUT_FILE" &
 LOG_PID=$!
 
 # Fonction de nettoyage à l'arrêt du script

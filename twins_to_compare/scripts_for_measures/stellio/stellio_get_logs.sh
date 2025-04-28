@@ -1,7 +1,7 @@
 #!/bin/bash
 
-CONTAINER_NAME="scorpio-iot-agent-1"
-OUTPUT_FILE=./twins_to_compare/scripts_for_measures/scorpio/measures/"$1-entities"
+CONTAINER_NAME="iot-agent"
+OUTPUT_FILE=./twins_to_compare/scripts_for_measures/stellio/measures/"$1-entities"
 
 if [ -z "$CONTAINER_NAME" ] || [ -z "$OUTPUT_FILE" ]; then
   echo "Usage: $0 <container_name> <output_file>"
@@ -9,7 +9,7 @@ if [ -z "$CONTAINER_NAME" ] || [ -z "$OUTPUT_FILE" ]; then
 fi
 
 echo "Redirecting logs from container '$CONTAINER_NAME' to file '$OUTPUT_FILE'..."
-docker logs -f --since 0s "$CONTAINER_NAME" > "$OUTPUT_FILE" &
+docker logs -f --since 0s "$CONTAINER_NAME" &> "$OUTPUT_FILE" &
 LOG_PID=$!
 
 # Fonction de nettoyage à l'arrêt du script

@@ -22,7 +22,8 @@ fi
 # Start containers
 cd "$MOSQUITTO_DOCKER_COMPOSE_LOCATION" || exit
 docker compose up -d &
-gnome-terminal -- bash -c "cd $FIWARE_DOCKER_COMPOSE_LOCATION && docker compose up"
+cd $FIWARE_DOCKER_COMPOSE_LOCATION
+docker compose up -d
 
 # Wait for containers to be up
 echo "Waiting for $MOSQUITTO_CONTAINER and Fiware containers to start..."

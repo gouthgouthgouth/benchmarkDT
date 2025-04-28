@@ -3,7 +3,6 @@ import os
 import signal
 import time
 from datetime import datetime, timedelta, timezone
-from zoneinfo import ZoneInfo
 from multiprocessing import Process
 from scripts.sensor_measurements_simulator import send_messages_uniformlaw, send_messages_poissonlaw, \
     send_messages_gaussianlaw
@@ -11,10 +10,11 @@ from twins_to_compare.eclipse_ditto.eclipse_utils import *
 from scripts.utils import get_road_segments_from_json
 from twins_to_compare.scorpio.scorpio_utils import scorpio_create_road_segments_and_sensors
 from twins_to_compare.orion_ld.orion_ld_utils import orion_create_road_segments_and_sensors
+from twins_to_compare.stellio.stellio_utils import stellio_create_road_segments_and_sensors
 from twins_to_compare.scripts_for_measures.get_logs import record_logs_mosquitto, \
     record_logs_cpu_ram_delay
 from twins_to_compare.scripts_for_measures.plot import plot_courbe_delay, plot_courbe_cpuram
-from twins_to_compare.scripts_for_measures.write_csvs import write_csvs
+from twins_to_compare.scripts_for_measures.write_csvs import write_csvs, write_csvs_scorpio, write_csvs_ditto
 
 tz = timezone(timedelta(hours=2))
 
@@ -31,6 +31,10 @@ def create_entities(dt_solution, entities):
         print_time("Creating entities...")
         orion_create_road_segments_and_sensors(entities)
         print_time("Entities created.")
+    elif dt_solution == "stellio":
+        print_time("Creating entities...")
+        stellio_create_road_segments_and_sensors(entities)
+        print_time("Entities created.")
 
 
 def cleanup(pid_list, mosquitto_process):
@@ -45,18 +49,21 @@ def cleanup(pid_list, mosquitto_process):
         mosquitto_process.join()
     print_time("Cleanup done.")
 
-def make_measurements(dt_solution, create_entities_before_measures=False, nb_seconds=60, uniform_law_enabled=False, unif_frequency=10,
+def make_measurements(dt_solution, nb_entities, create_entities_before_measures=False, nb_seconds=60, uniform_law_enabled=False, unif_frequency=10,
                       poisson_law_enabled=False, poisson_lambda=10, gaussianlaw_enabled=False, gauss_nbmessages=100,
                       center_ratio=0.5, sigma_ratio=0.1):
     input_file_json = "data/road_segments_from_csv.json"
     entities = []
     if dt_solution == "ditto":
         entities = transform_jsonld_to_ditto(input_file_json, number_required=nb_entities)
-    elif dt_solution == "scorpio" or dt_solution == "orion_ld":
+    elif dt_solution == "scorpio" or dt_solution == "orion_ld" or dt_solution == "stellio":
         entities = get_road_segments_from_json(input_file_json, number_required=nb_entities)
     if create_entities_before_measures:
         create_entities(dt_solution=dt_solution, entities=entities)
 
+    # sending test messages
+    send_messages_uniformlaw(entities, dt_solution, msg_frequency_hz=6, nb_seconds=round(len(entities)/5) + 5, start_time=datetime.now(tz=tz) + timedelta(seconds=1))
+    time.sleep(10)
     # Starting to record logs for context broker and mosquitto
     file_datetime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     print_time("File datetime : " + file_datetime)
@@ -96,12 +103,26 @@ def make_measurements(dt_solution, create_entities_before_measures=False, nb_sec
                              "center_ratio": center_ratio,
                              "sigma_ratio": sigma_ratio})
         processes.append(p3)
+    # if fullbufferlaw_enabled:
+    #     p4 = Process(target=send_messages_fullbufferlaw,
+    #                  kwargs={"devices": entities,
+    #                          "dt_solution": dt_solution,
+    #                          "nb_messages": gauss_nbmessages,
+    #                          "nb_seconds": nb_seconds,
+    #                          "start_time": start_time,
+    #                          "center_ratio": center_ratio,
+    #                          "sigma_ratio": sigma_ratio})
+    #     processes.append(p4)
 
     for p in processes:
         p.start()
     for p in processes:
         p.join()
-    time.sleep(5)
+
+    if unif_frequency > 20:
+        time.sleep(unif_frequency * nb_seconds / 10)
+    else:
+        time.sleep(10)
 
     file_name = f"{file_datetime}_{dt_solution}_{nb_entities}entities_{nb_seconds}seconds"
 
@@ -128,62 +149,28 @@ if __name__ == "__main__":
     dt_solution = "ditto"
     # dt_solution = "scorpio"
     # dt_solution = "orion_ld"
+    # dt_solution = "stellio"
 
     # Nombre d'entités
-    nb_entities = 50
+    # nb_entities = 10
     # Durée des mesures
-    nb_seconds = 5
+    nb_seconds = 300
 
-    # input_file_json = "data/road_segments_from_csv.json"
-    # entities = get_road_segments_from_json(input_file_json, number_required=nb_entities)
-    # orion_create_road_segments_and_sensors(entities)
+    time.sleep(120)
 
 
-    make_measurements(dt_solution,
-                      create_entities_before_measures=False,
-                      nb_seconds=nb_seconds,
+    for nb_entities in range(35, 101, 5):
 
-                      uniform_law_enabled=True,
-                      unif_frequency=5,
+        f = nb_entities
 
-                      poisson_law_enabled=False,
-                      poisson_lambda=10,
+        make_measurements(dt_solution,
+                          create_entities_before_measures=True,
+                          nb_entities=nb_entities,
+                          nb_seconds=nb_seconds,
+                          uniform_law_enabled=True,
+                          unif_frequency=f)
 
-                      gaussianlaw_enabled=False,
-                      gauss_nbmessages=1000,
-                      center_ratio=0.5,
-                      sigma_ratio=0.1)
 
-    # make_measurements(dt_solution,
-    #                   create_entities_before_measures=False,
-    #                   nb_seconds=nb_seconds,
-    #
-    #                   uniform_law_enabled=True,
-    #                   unif_frequency=50,
-    #
-    #                   poisson_law_enabled=False,
-    #                   poisson_lambda=10,
-    #
-    #                   gaussianlaw_enabled=True,
-    #                   gauss_nbmessages=1000,
-    #                   center_ratio=0.5,
-    #                   sigma_ratio=0.1)
-    #
-    # make_measurements(dt_solution,
-    #                   create_entities_before_measures=False,
-    #                   nb_seconds=nb_seconds,
-    #
-    #                   uniform_law_enabled=True,
-    #                   unif_frequency=20,
-    #
-    #                   poisson_law_enabled=False,
-    #                   poisson_lambda=10,
-    #
-    #                   gaussianlaw_enabled=True,
-    #                   gauss_nbmessages=2000,
-    #                   center_ratio=0.5,
-    #                   sigma_ratio=0.1)
-    #
     # make_measurements(dt_solution,
     #                   create_entities_before_measures=False,
     #                   nb_seconds=nb_seconds,

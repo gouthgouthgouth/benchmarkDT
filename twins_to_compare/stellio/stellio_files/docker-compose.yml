@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: stellio
       POSTGRES_DB: stellio_search
     ports:
-      - "5434:5432"
+      - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./postgres-initdb:/docker-entrypoint-initdb.d
@@ -37,6 +37,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   stellio-search:
+    hostname: stellio-search
     build:
       context: ./search-service
     container_name: stellio-search
@@ -44,7 +45,7 @@ services:
       - postgres
       - kafka
     ports:
-      - "1026:8080"
+      - "8080:8080"
     volumes:
       - ./stellio-override.properties:/app/config/application.properties
       - ./search-service/wait-for-postgres.sh:/wait-for-postgres.sh
@@ -57,6 +58,12 @@ services:
       DB_USER: stellio
       DB_PASSWORD: stellio
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      APPLICATION_TENANTS_0_NAME: urn:ngsi-ld:tenant:default
+      APPLICATION_TENANTS_0_ISSUER: http://dummy-issuer
+      APPLICATION_TENANTS_0_DBSCHEMA: public
+      APPLICATION_TENANTS_1_NAME: tenant-1
+      APPLICATION_TENANTS_1_ISSUER: http://dummy-issuer
+      APPLICATION_TENANTS_1_DBSCHEMA: tenant1
 
   iot-agent:
     container_name: iot-agent
@@ -69,8 +76,8 @@ services:
       - "4041:4041"
       - "7896:7896"
     environment:
-      - IOTA_CB_HOST=scorpio
-      - IOTA_CB_PORT=9090
+      - IOTA_CB_HOST=stellio-search
+      - IOTA_CB_PORT=8080
       - IOTA_CB_NGSI_VERSION=ld
       - IOTA_NORTH_HOST=0.0.0.0
       - IOTA_NORTH_PORT=4041
@@ -91,6 +98,7 @@ services:
       - IOTA_JSON_LD_CONTEXT=https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld
       - IOTA_FALLBACK_TENANT=openiot
       - IOTA_MULTI_CORE=true
+      - IOTA_LD_FORWARD_CONTEXT_SOURCE=false
     depends_on:
       - stellio-search
 

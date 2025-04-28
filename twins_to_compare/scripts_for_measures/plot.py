@@ -1,10 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from datetime import datetime, timezone
 
-def plot_courbe_delay(file_datetime, beginning, dt_solution="ditto"):
+def plot_courbe_delay(file_datetime, beginning, dt_solution):
     result_file = f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/results/" + file_datetime + "-delays.csv"
-
+    plt.close(fig='all')
     # Charger le CSV
     df = pd.read_csv(result_file)
 
@@ -27,8 +26,9 @@ def plot_courbe_delay(file_datetime, beginning, dt_solution="ditto"):
     plt.gcf().autofmt_xdate()
     plt.savefig(f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_datetime}-delays-plot.png")
     print(f"Plot saved as {dt_solution}/results/{file_datetime}-delays-plot.png")
+    plt.close()
 
-def plot_courbe_cpuram(file_datetime, file_name, beginning, dt_solution="ditto"):
+def plot_courbe_cpuram(file_datetime, file_name, beginning, dt_solution):
     result_file = f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/measures/{file_datetime}-cpu_ram_sum"
 
     # Charger le CSV
@@ -61,3 +61,4 @@ def plot_courbe_cpuram(file_datetime, file_name, beginning, dt_solution="ditto")
     plt.legend()
     plt.savefig(f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_name}-ram-plot.png")
     print(f"RAM plot saved as {dt_solution}/{file_name}-ram-plot.png")
+    plt.close()
