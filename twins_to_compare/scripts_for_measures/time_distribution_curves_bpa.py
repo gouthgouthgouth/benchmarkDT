@@ -1,4 +1,5 @@
 import csv
+import math
 import pprint
 
 import matplotlib.pyplot as plt
@@ -9,15 +10,26 @@ import re
 
 linestyles = itertools.cycle(('-', '--', ':'))
 
-p_list = [0.5, 0.9, 0.99, 0.999, 0.9999, 1]
-csv_filepaths_ditto = sorted(glob.glob("./results/ditto/nb_entities/*.csv"), key=lambda f: int(re.search(r'_(\d+)entities_', f).group(1)))
-csv_filepaths_orion = sorted(glob.glob("./results/orion_ld/nb_entities/*.csv"), key=lambda f: int(re.search(r'_(\d+)entities_', f).group(1)))
-csv_filepaths_scorpio = sorted(glob.glob("./results/scorpio/nb_entities/*.csv"), key=lambda f: int(re.search(r'_(\d+)entities_', f).group(1)))
+p_list = [0.5, 0.9, 0.99, 0.999, 1]
+csv_filepaths_ditto = sorted(glob.glob("./results/ditto/bytes_per_attribute/*.csv"), key=lambda f: int(re.search(r'_(\d+)bpa_', f).group(1)))
+csv_filepaths_orion = sorted(glob.glob("./results/orion_ld/bytes_per_attribute/*.csv"), key=lambda f: int(re.search(r'_(\d+)bpa_', f).group(1)))
+csv_filepaths_scorpio = sorted(glob.glob("results/scorpio/bytes_per_attribute/*.csv"), key=lambda f: int(re.search(r'_(\d+)bpa_', f).group(1)))
 
-for files in [csv_filepaths_ditto, csv_filepaths_orion, csv_filepaths_scorpio]:
-    for file in files:
-        if "70entities" in file:
-            files.remove(file)
+# Uncomment to filter certain results
+# for files in [csv_filepaths_ditto, csv_filepaths_orion, csv_filepaths_scorpio]:
+#     for file in files:
+#         if "70entities" in file:
+#             files.remove(file)
+
+def to_power_notation(n):
+    if n == 0:
+        return "0"
+    power = math.log10(n)
+    if not power.is_integer():
+        return str(n)  # Pas une puissance exacte de 10
+    power = int(power)
+    superscripts = str.maketrans("0123456789-", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻")
+    return f"10{str(power).translate(superscripts)}"
 
 def extraire_colonnes_csv(filepath):
     with open(filepath, newline='', encoding='utf-8') as f:
@@ -56,21 +68,24 @@ dictionnarys = {}
 distribution_dict = {}
 sorted_columns_dict = {}
 for filepath in csv_filepaths_ditto:
-    fp = "ditto, " + filepath.split("ditto_")[1].split("entities")[0] + " entities"
+    bpa = int(filepath.split("attr_")[1].split("bpa")[0])
+    fp = "ditto, " + to_power_notation(bpa) + " bytes/attribute"
     dict_columns = extraire_colonnes_csv(filepath)
     dictionnarys[fp] = dict_columns
     distribution_dict[fp] = get_distribution_list_from_percentiles(dict_columns, p_list)
     sorted_columns_dict[fp] = sorted([round(float(x) * 1000) for x in dict_columns["delay (s)"]])
 
 for filepath in csv_filepaths_orion:
-    fp = "orion-LD, " + filepath.split("orion_ld_")[1].split("entities")[0] + " entities"
+    bpa = int(filepath.split("attr_")[1].split("bpa")[0])
+    fp = "orion-LD, " + to_power_notation(bpa) + " bytes/attribute"
     dict_columns = extraire_colonnes_csv(filepath)
     dictionnarys[fp] = dict_columns
     distribution_dict[fp] = get_distribution_list_from_percentiles(dict_columns, p_list)
     sorted_columns_dict[fp] = sorted([round(float(x) * 1000) for x in dict_columns["delay (s)"]])
 
 for filepath in csv_filepaths_scorpio:
-    fp = "scorpio, " + filepath.split("scorpio_")[1].split("entities")[0] + " entities"
+    bpa = int(filepath.split("attr_")[1].split("bpa")[0])
+    fp = "scorpio, " + to_power_notation(bpa) + " bytes/attribute"
     dict_columns = extraire_colonnes_csv(filepath)
     dictionnarys[fp] = dict_columns
     distribution_dict[fp] = get_distribution_list_from_percentiles(dict_columns, p_list)
@@ -100,10 +115,10 @@ plt.xlabel("processing time (ms)")
 plt.ylabel("CCDF")
 plt.xscale("log")
 plt.xlim(left=1)
-plt.xlim(right=50000)
+plt.xlim(right=4000)
 plt.grid(True, which="both", ls="--", linewidth=0.5)
 plt.legend()
 plt.tight_layout()
-plt.savefig("comparison results/plot_nbentities.png", dpi=300)
+plt.savefig("comparison results/plot_bpa.png", dpi=300)
 
 pprint.pprint(distribution_dict)
