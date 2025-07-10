@@ -18,7 +18,7 @@ def record_logs_mosquitto(date, dt_solution):
     def on_message(client, userdata, msg):
         now = datetime.now(ZoneInfo("Europe/Paris")).isoformat(timespec='milliseconds')
         with open(output_file, "a") as f:
-            f.write(f"{now} {msg.topic} {msg.payload.decode(errors='ignore')}\n")
+            f.write(f"{now} {msg.topic}\n")
 
     client = mqtt.Client()
     client.on_connect = on_connect

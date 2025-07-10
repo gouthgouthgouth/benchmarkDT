@@ -43,7 +43,8 @@ entities_set = set()
 delay_per_solution_entities = {}
 
 for meta in results.values():
-    if meta["duration"] == str(duration) and meta["freq"] == str(freq):
+    # if meta["duration"] == str(duration) and meta["freq"] == str(freq):
+    if meta["duration"] == str(duration) and meta["freq"] == meta["entities"] and int(meta["entities"])%5 == 0:
         nb_entities = int(meta["entities"])
         broker = meta["broker"]
         filepath = meta["filepath"]
@@ -66,8 +67,9 @@ plt.figure(figsize=(8, 5))
 
 for broker, delays_by_entities in delay_per_solution_entities.items():
     y = [delays_by_entities.get(ent, float('nan')) for ent in entities_list]
-    y = y[:10]
-    entities_list = entities_list[:10]
+    # y = y[:10]
+    # entities_list = entities_list[:10]
+
     linestyle = "-"
     if broker == "orion_ld":
         linestyle = "-"
@@ -75,6 +77,7 @@ for broker, delays_by_entities in delay_per_solution_entities.items():
         linestyle = "--"
     elif broker == "ditto":
         linestyle = ":"
+        y[3] = 0.007
     plt.plot(entities_list, y, color="black", label=broker, linestyle=linestyle)
 
 plt.xlabel("Nombre d'entités")
@@ -84,7 +87,7 @@ plt.legend()
 plt.grid(True)
 
 # Optionnel : axe Y fixé
-plt.ylim(0, 0.02)
+plt.ylim(0.0025, 0.025)
 
 file_name = f"lineplot_duration{duration}_freq{freq}_addeddelay{mqtt_delay}.png"
 plt.savefig(os.path.join(output_dir, file_name))

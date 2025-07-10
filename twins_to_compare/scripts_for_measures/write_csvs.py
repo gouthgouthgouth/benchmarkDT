@@ -6,13 +6,16 @@ from datetime import datetime, timedelta
 
 def write_csvs(file_datetime, dt_solution, file_name):
     if dt_solution == "ditto":
-        write_csvs_ditto(file_datetime, file_name)
+        csv_filename = write_csvs_ditto(file_datetime, file_name)
     elif dt_solution == "scorpio":
-        write_csvs_scorpio(file_datetime, file_name)
+        csv_filename = write_csvs_scorpio(file_datetime, file_name)
     elif dt_solution == "orion_ld":
-        write_csvs_orion(file_datetime, file_name)
-    elif dt_solution == "stellio":
-        write_csvs_stellio(file_datetime, file_name)
+        csv_filename = write_csvs_orion(file_datetime, file_name)
+    # elif dt_solution == "stellio":
+    #     csv_filename = write_csvs_stellio(file_datetime, file_name)
+    else:
+        return None
+    return csv_filename
 
 def write_csvs_ditto(file_datetime, file_name):
     dt = datetime.strptime(file_datetime, "%Y-%m-%d_%H-%M-%S")
@@ -102,6 +105,7 @@ def write_csvs_ditto(file_datetime, file_name):
             else:
                 delay = "Error, msg not received or log wasn't captured."
             writer.writerow([mosquitto_messages[(thing_id, occurence)], message_id, delay])
+    return result_file
 
 
 def write_csvs_scorpio(file_datetime, file_name):
@@ -144,10 +148,10 @@ def write_csvs_scorpio(file_datetime, file_name):
         writer = csv.writer(csvfile)
         writer.writerow(["timestamp", "thing_id", "occurence"])
         for line in f:
-            if "/ul/apikey123/TrafficFlowSensor" in line:
+            if "/json/apikey123/TrafficFlowSensor" in line:
                 timestamp = line[:23].replace("T", "_").replace(":", "-")
                 if datetime.strptime(timestamp[:19], "%Y-%m-%d_%H-%M-%S") >= dt:
-                    thing_id = "urn:ngsi-ld:RoadSegment:RoadSegment" + line.split("TrafficFlowSensor")[1].split(" ")[0][:-6]
+                    thing_id = "urn:ngsi-ld:RoadSegment:RoadSegment" + line.split("TrafficFlowSensor")[1].split("/")[0]
 
                     if thing_id in occurence:
                         occurence[thing_id] += 1
@@ -194,7 +198,7 @@ def write_csvs_scorpio(file_datetime, file_name):
             else:
                 delay = "Error, msg not received or log wasn't captured."
             writer.writerow([mosquitto_messages[(thing_id, occurence)], message_id, delay])
-
+    return result_file
 
 def write_csvs_orion(file_datetime, file_name):
     dt = datetime.strptime(file_datetime, "%Y-%m-%d_%H-%M-%S")
@@ -233,10 +237,10 @@ def write_csvs_orion(file_datetime, file_name):
         writer = csv.writer(csvfile)
         writer.writerow(["timestamp", "thing_id", "occurence"])
         for line in f:
-            if "/ul/apikey123/TrafficFlowSensor" in line:
+            if "/json/apikey123/TrafficFlowSensor" in line:
                 timestamp = line[:23].replace("T", "_").replace(":", "-")
                 if datetime.strptime(timestamp[:19], "%Y-%m-%d_%H-%M-%S") >= dt:
-                    thing_id = "urn:ngsi-ld:RoadSegment:RoadSegment" + line.split("TrafficFlowSensor")[1].split(" ")[0][:-6]
+                    thing_id = "urn:ngsi-ld:RoadSegment:RoadSegment" + line.split("TrafficFlowSensor")[1].split("/")[0]
 
                     if thing_id in occurence:
                         occurence[thing_id] += 1
@@ -283,6 +287,7 @@ def write_csvs_orion(file_datetime, file_name):
             else:
                 delay = "Error, msg not received or log wasn't captured."
             writer.writerow([mosquitto_messages[(thing_id, occurence)], message_id, delay])
+    return result_file
 
 def write_csvs_stellio(file_datetime, file_name):
     dt = datetime.strptime(file_datetime, "%Y-%m-%d_%H-%M-%S")
@@ -323,7 +328,7 @@ def write_csvs_stellio(file_datetime, file_name):
         writer = csv.writer(csvfile)
         writer.writerow(["timestamp", "thing_id", "occurence"])
         for line in f:
-            if "/ul/apikey123/TrafficFlowSensor" in line:
+            if "/json/apikey123/TrafficFlowSensor" in line:
                 timestamp = line[:23].replace("T", "_").replace(":", "-")
                 if datetime.strptime(timestamp[:19], "%Y-%m-%d_%H-%M-%S") >= dt:
                     thing_id = "urn:ngsi-ld:RoadSegment:RoadSegment" + line.split("TrafficFlowSensor")[1].split(" ")[0][:-6]
@@ -373,3 +378,11 @@ def write_csvs_stellio(file_datetime, file_name):
             else:
                 delay = "Error, msg not received or log wasn't captured."
             writer.writerow([mosquitto_messages[(thing_id, occurence)], message_id, delay])
+    return result_file
+
+def log_not_captured_in_csv(csv_file):
+    with open(csv_file, 'r', encoding='utf-8') as f:
+        for line in f:
+            if "Error, msg not received or log wasn't captured" in line:
+                return True
+    return False

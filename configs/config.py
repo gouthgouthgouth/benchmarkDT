@@ -16,10 +16,6 @@ scorpio_config_data = {
     "default_resource" : "/iot/json",
     "transport" : "MQTT",
     "sensor_entity_type" : "TrafficFlowSensor",
-    "trafficFlowSensor_attributes" : [
-        {"object_id": "c", "name": "carTrafficFlow", "type": "Integer"},
-        {"object_id": "t", "name": "truckTrafficFlow", "type": "Integer"}
-    ],
 }
 
 orion_config_data = {
@@ -32,10 +28,6 @@ orion_config_data = {
     "default_resource" : "/iot/json",
     "transport" : "MQTT",
     "sensor_entity_type" : "TrafficFlowSensor",
-    "trafficFlowSensor_attributes" : [
-        {"object_id": "c", "name": "carTrafficFlow", "type": "Integer"},
-        {"object_id": "t", "name": "truckTrafficFlow", "type": "Integer"}
-    ],
 }
 
 stellio_config_data = {
