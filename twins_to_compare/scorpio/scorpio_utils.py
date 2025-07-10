@@ -1,9 +1,26 @@
 import json
+import time
 
 import requests
+import string
+from itertools import product, islice
 
 from configs.config import scorpio_config_data, RAM_LIMIT, CPU_LIMIT
 from scripts.utils import print_time
+
+def generate_compact_attributes(n):
+    alphabet = string.ascii_lowercase
+    ids = map(lambda t: ''.join(t), islice(product(alphabet, repeat=1), n)) if n <= 26 else \
+        map(lambda t: ''.join(t), islice(product(alphabet, repeat=2), n))
+
+    return [
+        {
+            "object_id": id_,
+            "name": f"attribute_{id_}",
+            "type": "String"
+        }
+        for id_ in ids
+    ]
 
 def add_road_segments(road_segments, fiware_service, fiware_servicepath):
     url = scorpio_config_data["CBROKER_ADDRESS"] + "ngsi-ld/v1/entities/"
@@ -69,7 +86,7 @@ def create_iot_service(apikey, entity_type, resource, fiware_service, fiware_ser
 
 
 def create_iot_device(id, entity_type, apikey, transport, attributes, static_attributes,
-                      fiware_service, fiware_servicepath, protocol="PDI-IoTA-UltraLight"):
+                      fiware_service, fiware_servicepath):
     """
     Create an IoT device in the FIWARE IoT Agent.
 
@@ -77,7 +94,6 @@ def create_iot_device(id, entity_type, apikey, transport, attributes, static_att
         id (int): The unique ID for the device.
         entity_type (str): The entity type for the device.
         apikey (str): The API key for the device.
-        protocol (str): The communication protocol (e.g., PDI-IoTA-UltraLight).
         transport (str): The transport protocol (e.g., HTTP).
         attributes (list or None): A list of attributes with object_id, name, and type.
         static_attributes (list or None): A list of static attributes with name, type, and value.
@@ -102,7 +118,6 @@ def create_iot_device(id, entity_type, apikey, transport, attributes, static_att
                 "entity_name": entity_type + str(id),
                 "entity_type": entity_type,
                 "apikey": apikey,
-                "protocol": protocol,
                 "transport": transport
             }
         ]
@@ -195,7 +210,70 @@ def create_traffic_flow_measurement(device_id, car_traffic_flow, truck_traffic_f
         print(f"Failed to send measurement: {e}")
         return None
 
-def scorpio_create_road_segments_and_sensors(road_segments):
+def scorpio_delete_road_segments_and_sensors(road_segments):
+    url = scorpio_config_data["CBROKER_ADDRESS"] + "ngsi-ld/v1/entities/"
+
+    for segment in road_segments:
+        try:
+            url_with_id = url + segment["id"]
+            headers = {
+                "fiware-service": scorpio_config_data["fiware_service"],
+                "fiware-servicepath": scorpio_config_data["fiware_servicepath"]
+            }
+            response = requests.delete(url_with_id, headers=headers)
+
+            if response.status_code in (204, 404):
+                print_time(f"🗑️  Deleted {segment["id"]}")
+            else:
+                print_time(f"❌ Failed to delete {segment["id"]}: {response.status_code} {response.text}")
+        except Exception as e:
+            print_time(f"Erreur lors de la suppression de {segment['id']}: {e}")
+
+    headers = {
+        "fiware-service": scorpio_config_data["fiware_service"],
+        "fiware-servicepath": scorpio_config_data["fiware_servicepath"]
+    }
+    # Delete all devices
+    try:
+        r = requests.get(f"{scorpio_config_data["IOT_AGENT_ADDRESS"]}/iot/devices", headers=headers)
+        r.raise_for_status()
+        devices = r.json().get("devices", [])
+        for device in devices:
+            dev_id = device["device_id"]
+            try:
+                resp = requests.delete(f"{scorpio_config_data["IOT_AGENT_ADDRESS"]}/iot/devices/{dev_id}", headers=headers)
+                if resp.status_code == 204:
+                    print_time(f"🗑️  Deleted device {dev_id}")
+                else:
+                    print_time(f"❌ Failed to delete device {dev_id} - {resp.status_code}: {resp.text}")
+            except Exception as e:
+                print_time(f"❌ Exception while deleting device {dev_id}: {e}")
+    except Exception as e:
+        print_time(f"❌ Exception while listing devices: {e}")
+
+    # Delete all service groups
+    try:
+        r = requests.get(f"{scorpio_config_data["IOT_AGENT_ADDRESS"]}/iot/services", headers=headers)
+        r.raise_for_status()
+        services = r.json().get("services", [])
+        for svc in services:
+            apikey = svc["apikey"]
+            resource = svc["resource"]
+            try:
+                url = f"{scorpio_config_data["IOT_AGENT_ADDRESS"]}/iot/services?apikey={apikey}&resource={resource}"
+                resp = requests.delete(url, headers=headers)
+                if resp.status_code == 204:
+                    print_time(f"🗑️  Deleted service {apikey}")
+                else:
+                    print_time(f"❌ Failed to delete service {apikey} - {resp.status_code}: {resp.text}")
+            except Exception as e:
+                print_time(f"❌ Exception while deleting service {apikey}: {e}")
+    except Exception as e:
+        print_time(f"❌ Exception while listing services: {e}")
+
+
+
+def scorpio_create_road_segments_and_sensors(road_segments, nb_attributes):
     add_road_segments(road_segments,
                       fiware_service=scorpio_config_data["fiware_service"],
                       fiware_servicepath=scorpio_config_data["fiware_servicepath"]
@@ -209,6 +287,7 @@ def scorpio_create_road_segments_and_sensors(road_segments):
     sensor_id_counter = 0
     for segment in road_segments:
         sensor_id_counter += 1
+        trafficFlowSensor_attributes = generate_compact_attributes(nb_attributes)
         static_attributes = [
             {
                 "name": "location",
@@ -220,7 +299,7 @@ def scorpio_create_road_segments_and_sensors(road_segments):
                 "type": "Relationship",
                 "value": segment["id"],
                 "link": {
-                    "attributes": ["carTrafficFlow", "truckTrafficFlow"],
+                    "attributes": [att["name"] for att in trafficFlowSensor_attributes],
                     "name": "providedBy",
                     "type": "RoadSegment"
                 }
@@ -231,8 +310,31 @@ def scorpio_create_road_segments_and_sensors(road_segments):
                           entity_type=scorpio_config_data["sensor_entity_type"],
                           apikey=scorpio_config_data["apikey"],
                           transport=scorpio_config_data["transport"],
-                          attributes=scorpio_config_data["trafficFlowSensor_attributes"],
+                          attributes=trafficFlowSensor_attributes,
                           static_attributes=static_attributes,
                           fiware_service=scorpio_config_data["fiware_service"],
-                          fiware_servicepath=scorpio_config_data["fiware_servicepath"],
-                          protocol="PDI-IoTA-UltraLight")
+                          fiware_servicepath=scorpio_config_data["fiware_servicepath"])
+
+
+def scorpio_subscribe_notifications():
+    subscription = {
+        "type": "Subscription",
+        "entities": [{"type": "RoadSegment"}],
+        "notification": {
+            "endpoint": {
+                "uri": "http://localhost:3000/notify",
+                "accept": "application/ld+json"
+            }
+        }
+    }
+
+    headers = {
+        "Content-Type": "application/ld+json"
+    }
+
+    response = requests.post(
+        "http://localhost:9090/ngsi-ld/v1/subscriptions",
+        headers=headers,
+        data=json.dumps(subscription)
+    )
+    return response.status_code, response.text

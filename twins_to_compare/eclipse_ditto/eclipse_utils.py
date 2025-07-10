@@ -12,6 +12,9 @@ def eclipse_create_things(ditto_things):
         put_thing(thing, policy="my.namespace:RoadSegment")
     put_mqtt_connection()
 
+def eclipse_delete_things(entities):
+    pass
+
 def transform_jsonld_to_ditto(input_file, number_required=None):
     with open(input_file, "r", encoding="utf-8") as f:
         jsonld_data = json.load(f)
@@ -29,9 +32,6 @@ def transform_jsonld_to_ditto(input_file, number_required=None):
                 "length": entity.get("length", {}).get("value", 0),
                 "totalLaneNumber": entity.get("totalLaneNumber", {}).get("value", 0),
                 "speedLimit": entity.get("speedLimit", {}).get("value", 0),
-                # "trafficFlow": {
-                #     "value": {}
-                # }
             }
         }
         ditto_things.append(thing)
@@ -147,3 +147,6 @@ def put_mqtt_connection():
         print_time("✅ MQTT Connection configured successfully!")
     else:
         print_time(f"❌ Error configuring MQTT connection: {response.text}")
+
+def eclipse_subscribe_notifications(entities):
+    return None

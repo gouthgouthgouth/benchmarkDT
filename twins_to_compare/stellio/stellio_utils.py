@@ -4,6 +4,10 @@ import requests
 from configs.config import stellio_config_data
 from scripts.utils import print_time
 
+def stellio_delete_road_segments_and_sensors(entities):
+    pass
+
+
 def add_road_segments(road_segments):
     url = stellio_config_data["CBROKER_ADDRESS"] + "ngsi-ld/v1/entities/"
 
@@ -147,3 +151,27 @@ def stellio_create_road_segments_and_sensors(road_segments):
                           fiware_service=stellio_config_data["fiware_service"],
                           fiware_servicepath=stellio_config_data["fiware_servicepath"],
                           protocol="PDI-IoTA-UltraLight")
+
+
+def stellio_subscribe_notifications():
+    subscription = {
+        "type": "Subscription",
+        "entities": [{"type": "RoadSegment"}],
+        "notification": {
+            "endpoint": {
+                "uri": "http://localhost:3000/notify",
+                "accept": "application/ld+json"
+            }
+        }
+    }
+
+    headers = {
+        "Content-Type": "application/ld+json"
+    }
+
+    response = requests.post(
+        "http://localhost:8080/ngsi-ld/v1/subscriptions",
+        headers=headers,
+        data=json.dumps(subscription)
+    )
+    return response.status_code, response.text
