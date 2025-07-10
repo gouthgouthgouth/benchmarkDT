@@ -21,7 +21,7 @@ services:
       POSTGRES_DB: ngb
 
   iot-agent:
-    image: fiware/iotagent-ul:latest
+    image: fiware/iotagent-json:latest        # ← JSON payload IoT Agent
     hostname: iot-agent
     expose:
       - "4041"
@@ -35,7 +35,7 @@ services:
       - IOTA_CB_NGSI_VERSION=ld
       - IOTA_NORTH_HOST=0.0.0.0
       - IOTA_NORTH_PORT=4041
-      - IOTA_LOG_LEVEL=DEBUG
+      - IOTA_LOG_LEVEL=INFO
       - IOTA_MQTT_HOST=mosquitto
       - IOTA_MQTT_PORT=1883
       - IOTA_HTTP_PORT=7896

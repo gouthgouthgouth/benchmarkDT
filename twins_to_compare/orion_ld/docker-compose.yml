@@ -17,7 +17,7 @@ services:
       - mongo-orion-data:/data/db
 
   iot-agent:
-    image: fiware/iotagent-ul:latest
+    image: fiware/iotagent-json:latest        # ← JSON payload IoT Agent
     hostname: iot-agent
     expose:
       - "4041"
@@ -34,17 +34,16 @@ services:
       - IOTA_LOG_LEVEL=INFO
       - IOTA_MQTT_HOST=mosquitto
       - IOTA_MQTT_PORT=1883
+      - IOTA_TRANSPORT=MQTT
       - IOTA_HTTP_PORT=7896
+      - IOTA_DEFAULT_RESOURCE=/iot/json
       - IOTA_TIMESTAMP=true
       - IOTA_AUTOCAST=true
-      - IOTA_DEFAULT_RESOURCE=/iot/json
-      - IOTA_TRANSPORT=MQTT
       - IOTA_REGISTRY_TYPE=mongodb
       - IOTA_MONGO_HOST=mongo-iot
       - IOTA_MONGO_PORT=27017
       - IOTA_MONGO_DB=iotagent
       - IOTA_PROVIDER_URL=http://iot-agent:4041
-      - IOTA_UL20_AMQP_BINDING=false
       - IOTA_JSON_LD_CONTEXT=https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld
       - IOTA_FALLBACK_TENANT=openiot
       - IOTA_MULTI_CORE=true
