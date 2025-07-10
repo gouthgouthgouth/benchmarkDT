@@ -92,7 +92,6 @@ for label, values in sorted_columns_dict.items():
 
     data = np.array(values)
     ccdf = 1.0 - np.arange(1, len(data)+1) / len(data)
-    print(label)
     color = colors.get(label[:5], None)
     plt.semilogy(data, ccdf, label=label, linestyle=next(linestyles), color=color)
 
@@ -102,7 +101,7 @@ plt.xscale("log")
 plt.xlim(left=1)
 plt.xlim(right=50000)
 plt.grid(True, which="both", ls="--", linewidth=0.5)
-plt.legend()
+plt.legend(loc="upper right", fontsize=15)
 plt.tight_layout()
 plt.savefig("comparison results/plot_nbentities.png", dpi=300)
 

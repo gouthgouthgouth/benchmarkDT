@@ -96,7 +96,7 @@ plt.ylabel("CCDF")
 plt.xlim(left=1)
 plt.xlim(right=70)
 plt.grid(True, which="both", ls="--", linewidth=0.5)
-plt.legend()
+plt.legend(loc="upper right", fontsize=15)
 plt.tight_layout()
 plt.savefig("comparison results/plot_nbattributes.png", dpi=300)
 
