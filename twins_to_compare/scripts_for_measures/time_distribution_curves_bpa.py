@@ -11,9 +11,9 @@ import re
 linestyles = itertools.cycle(('-', '--', ':'))
 
 p_list = [0.5, 0.9, 0.99, 0.999, 1]
-csv_filepaths_ditto = sorted(glob.glob("./results/ditto/bytes_per_attribute/*.csv"), key=lambda f: int(re.search(r'_(\d+)bpa_', f).group(1)))
-csv_filepaths_orion = sorted(glob.glob("./results/orion_ld/bytes_per_attribute/*.csv"), key=lambda f: int(re.search(r'_(\d+)bpa_', f).group(1)))
-csv_filepaths_scorpio = sorted(glob.glob("results/scorpio/bytes_per_attribute/*.csv"), key=lambda f: int(re.search(r'_(\d+)bpa_', f).group(1)))
+csv_filepaths_ditto = sorted(glob.glob("conf paper results/ditto/bytes_per_attribute/*.csv"), key=lambda f: int(re.search(r'_(\d+)bpa_', f).group(1)))
+csv_filepaths_orion = sorted(glob.glob("conf paper results/orion_ld/bytes_per_attribute/*.csv"), key=lambda f: int(re.search(r'_(\d+)bpa_', f).group(1)))
+csv_filepaths_scorpio = sorted(glob.glob("conf paper results/scorpio/bytes_per_attribute/*.csv"), key=lambda f: int(re.search(r'_(\d+)bpa_', f).group(1)))
 
 # Uncomment to filter certain results
 # for files in [csv_filepaths_ditto, csv_filepaths_orion, csv_filepaths_scorpio]:

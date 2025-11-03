@@ -10,9 +10,9 @@ import re
 linestyles = itertools.cycle(('-', '--', ':'))
 
 p_list = [0.5, 0.9, 0.99, 0.999, 0.9999, 1]
-csv_filepaths_ditto = sorted(glob.glob("./results/ditto/nb_entities/*.csv"), key=lambda f: int(re.search(r'_(\d+)entities_', f).group(1)))
-csv_filepaths_orion = sorted(glob.glob("./results/orion_ld/nb_entities/*.csv"), key=lambda f: int(re.search(r'_(\d+)entities_', f).group(1)))
-csv_filepaths_scorpio = sorted(glob.glob("./results/scorpio/nb_entities/*.csv"), key=lambda f: int(re.search(r'_(\d+)entities_', f).group(1)))
+csv_filepaths_ditto = sorted(glob.glob("conf paper results/ditto/nb_entities/*.csv"), key=lambda f: int(re.search(r'_(\d+)entities_', f).group(1)))
+csv_filepaths_orion = sorted(glob.glob("conf paper results/orion_ld/nb_entities/*.csv"), key=lambda f: int(re.search(r'_(\d+)entities_', f).group(1)))
+csv_filepaths_scorpio = sorted(glob.glob("conf paper results/scorpio/nb_entities/*.csv"), key=lambda f: int(re.search(r'_(\d+)entities_', f).group(1)))
 
 for files in [csv_filepaths_ditto, csv_filepaths_orion, csv_filepaths_scorpio]:
     for file in files:

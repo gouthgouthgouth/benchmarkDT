@@ -4,7 +4,10 @@ import os
 from datetime import datetime, timedelta
 
 
-def write_csvs(file_datetime, dt_solution, file_name):
+def write_csvs(file_datetime, dt_solution, file_name, lambdas_list):
+    if lambdas_list is not None:
+        write_csv_lambdas(file_datetime, dt_solution, file_name, lambdas_list)
+
     if dt_solution == "ditto":
         csv_filename = write_csvs_ditto(file_datetime, file_name)
     elif dt_solution == "scorpio":
@@ -386,3 +389,11 @@ def log_not_captured_in_csv(csv_file):
             if "Error, msg not received or log wasn't captured" in line:
                 return True
     return False
+
+def write_csv_lambdas(file_datetime, dt_solution, file_name, lambdas_list):
+    result_file = "twins_to_compare/scripts_for_measures/" + dt_solution + "/results/" + file_name + "-lambdas_list.csv"
+    with open(result_file, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["change_timestamp", "lambda"])
+        for line in lambdas_list:
+            writer.writerow(line)

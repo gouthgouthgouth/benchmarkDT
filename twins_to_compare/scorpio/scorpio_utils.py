@@ -22,9 +22,10 @@ def generate_compact_attributes(n):
         for id_ in ids
     ]
 
-def add_road_segments(road_segments, fiware_service, fiware_servicepath):
+def add_road_segments(road_segments, fiware_service, fiware_servicepath, logs=False):
     url = scorpio_config_data["CBROKER_ADDRESS"] + "ngsi-ld/v1/entities/"
 
+    segments_created = 0
     for segment in road_segments:
         try:
             headers = {
@@ -35,13 +36,21 @@ def add_road_segments(road_segments, fiware_service, fiware_servicepath):
             response = requests.post(url, headers=headers, json=segment)
 
             if response.status_code == 201:
-                print_time(f"Entité {segment['id']} créée avec succès.")
+                segments_created += 1
+                if logs:
+                    print_time(f"✔️ Entité {segment['id']} créée avec succès.")
             else:
-                print_time(f"Échec de la création de {segment['id']}: {response.status_code}, {response.text}")
+                if logs:
+                    print_time(f"✖️ Échec de la création de {segment['id']}: {response.status_code}, {response.text}")
         except Exception as e:
-            print_time(f"Erreur lors de l'envoi de {segment['id']}: {e}")
+            print_time(f"✖️ Erreur lors de l'envoi de {segment['id']}: {e}")
 
-def create_iot_service(apikey, entity_type, resource, fiware_service, fiware_servicepath):
+    if segments_created == len(road_segments):
+        return True
+    else:
+        return False
+
+def create_iot_service(apikey, entity_type, resource, fiware_service, fiware_servicepath, logs=False):
     """
     Create an IoT service in the FIWARE IoT Agent.
 
@@ -75,18 +84,19 @@ def create_iot_service(apikey, entity_type, resource, fiware_service, fiware_ser
     }
 
     try:
-        print_time(f"Creating service {fiware_service}...")
+        print_time(f"ℹ️ Creating service {fiware_service}...")
         response = requests.post(url, headers=headers, data=json.dumps(payload))
         response.raise_for_status()
-        print_time("Service created successfully.")
+        if logs:
+            print_time("✔️ Service created successfully.")
         return response
     except requests.exceptions.RequestException as e:
-        print_time(f"Failed to create service: {e}")
-        return None
+        print_time(f"✖️ Failed to create service: {e}")
+        return False
 
 
 def create_iot_device(id, entity_type, apikey, transport, attributes, static_attributes,
-                      fiware_service, fiware_servicepath):
+                      fiware_service, fiware_servicepath, logs=False):
     """
     Create an IoT device in the FIWARE IoT Agent.
 
@@ -129,14 +139,17 @@ def create_iot_device(id, entity_type, apikey, transport, attributes, static_att
         payload["devices"][0]["static_attributes"] = static_attributes
 
     try:
-        print_time(f"Creating device {entity_type}{str(id)}...")
+        if logs:
+            print_time(f"ℹ️ Creating device {entity_type}{str(id)}...")
         response = requests.post(url, headers=headers, data=json.dumps(payload))
         response.raise_for_status()
-        print_time(f"Device {entity_type}{str(id)} created successfully.")
+        if logs:
+            print_time(f"✔️ Device {entity_type}{str(id)} created successfully.")
         return response
     except requests.exceptions.RequestException as e:
-        print_time(f"Failed to create device {entity_type}{str(id)} because of error : {e}")
-        return None
+        if logs:
+            print_time(f"✖️ Failed to create device {entity_type}{str(id)} because of error : {e}")
+        return False
 
 
 def get_entity(entity_id, entity_type, fiware_service=None, fiware_servicepath=None, key_values_only=False):
@@ -273,18 +286,23 @@ def scorpio_delete_road_segments_and_sensors(road_segments):
 
 
 
-def scorpio_create_road_segments_and_sensors(road_segments, nb_attributes):
-    add_road_segments(road_segments,
+def scorpio_create_road_segments_and_sensors(road_segments, nb_attributes, logs=False):
+    segments_created = add_road_segments(road_segments,
                       fiware_service=scorpio_config_data["fiware_service"],
-                      fiware_servicepath=scorpio_config_data["fiware_servicepath"]
+                      fiware_servicepath=scorpio_config_data["fiware_servicepath"],
+                      logs=logs
                       )
 
-    create_iot_service(apikey=scorpio_config_data["apikey"],
+    service_created = create_iot_service(apikey=scorpio_config_data["apikey"],
                                   entity_type=scorpio_config_data["sensor_entity_type"],
                                   resource=scorpio_config_data["default_resource"],
                                   fiware_service=scorpio_config_data["fiware_service"],
-                                  fiware_servicepath=scorpio_config_data["fiware_servicepath"])
+                                  fiware_servicepath=scorpio_config_data["fiware_servicepath"],
+                                  logs=logs)
     sensor_id_counter = 0
+    devices_created = 0
+    if logs:
+        print_time("ℹ️ Creating devices...")
     for segment in road_segments:
         sensor_id_counter += 1
         trafficFlowSensor_attributes = generate_compact_attributes(nb_attributes)
@@ -306,14 +324,21 @@ def scorpio_create_road_segments_and_sensors(road_segments, nb_attributes):
             }
         ]
 
-        create_iot_device(id=sensor_id_counter,
+        if create_iot_device(id=sensor_id_counter,
                           entity_type=scorpio_config_data["sensor_entity_type"],
                           apikey=scorpio_config_data["apikey"],
                           transport=scorpio_config_data["transport"],
                           attributes=trafficFlowSensor_attributes,
                           static_attributes=static_attributes,
                           fiware_service=scorpio_config_data["fiware_service"],
-                          fiware_servicepath=scorpio_config_data["fiware_servicepath"])
+                          fiware_servicepath=scorpio_config_data["fiware_servicepath"],
+                          logs=logs):
+            devices_created += 1
+
+    if segments_created and service_created and devices_created == len(road_segments):
+        return True
+    return False
+
 
 
 def scorpio_subscribe_notifications():

@@ -10,9 +10,9 @@ import re
 linestyles = itertools.cycle(('-', '--', '-.', ':'))
 
 p_list = [0.5, 0.9, 0.99, 0.999, 1]
-csv_filepaths_ditto = sorted(glob.glob("./results/ditto/nb_attributes/*.csv"), key=lambda f: int(re.search(r'_(\d+)attr_', f).group(1)))
-csv_filepaths_orion = sorted(glob.glob("./results/orion_ld/nb_attributes/*.csv"), key=lambda f: int(re.search(r'_(\d+)attr_', f).group(1)))
-csv_filepaths_scorpio = sorted(glob.glob("./results/scorpio/nb_attributes/*.csv"), key=lambda f: int(re.search(r'_(\d+)attr_', f).group(1)))
+csv_filepaths_ditto = sorted(glob.glob("conf paper results/ditto/nb_attributes/*.csv"), key=lambda f: int(re.search(r'_(\d+)attr_', f).group(1)))
+csv_filepaths_orion = sorted(glob.glob("conf paper results/orion_ld/nb_attributes/*.csv"), key=lambda f: int(re.search(r'_(\d+)attr_', f).group(1)))
+csv_filepaths_scorpio = sorted(glob.glob("conf paper results/scorpio/nb_attributes/*.csv"), key=lambda f: int(re.search(r'_(\d+)attr_', f).group(1)))
 
 def extraire_colonnes_csv(filepath):
     with open(filepath, newline='', encoding='utf-8') as f:
