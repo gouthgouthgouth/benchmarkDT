@@ -13,6 +13,8 @@ def eclipse_create_things(ditto_things, logs=False):
     for thing in ditto_things:
         if put_thing(thing, policy="my.namespace:RoadSegment", logs=logs):
             things_created += 1
+    if things_created == len(ditto_things):
+        print_time("✔️ Things created successfully!")
     mqtt_connection_established = put_mqtt_connection()
     time.sleep(1)
     if things_created == len(ditto_things) and policy_created and mqtt_connection_established:
@@ -31,7 +33,7 @@ def transform_jsonld_to_ditto(input_file, number_required=None):
     ditto_things = []
 
     for entity in jsonld_data:
-        thing_id = f"{eclipse_config_data["NAMESPACE"]}:{entity["id"].split(":")[-1]}"
+        thing_id = f"{eclipse_config_data['NAMESPACE']}:{entity['id'].split(':')[-1]}"
         thing = {
             "thingId": thing_id,
             "attributes": {
@@ -53,29 +55,29 @@ def transform_jsonld_to_ditto(input_file, number_required=None):
         i = 1
         while number_required > len(ditto_things):
             road_segment_to_add = deepcopy(ditto_things[i - 1])
-            road_segment_to_add["thingId"] = f"{eclipse_config_data["NAMESPACE"]}:{road_segment_to_add["attributes"]["type"]}{initial_number + i}"
+            road_segment_to_add["thingId"] = f"{eclipse_config_data['NAMESPACE']}:{road_segment_to_add['attributes']['type']}{initial_number + i}"
             ditto_things.append(road_segment_to_add)
             i += 1
 
     return ditto_things
 
 def put_thing(thing, policy=None, logs=False):
-    url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/things/{thing["thingId"]}"
+    url = f"{eclipse_config_data['DITTO_BASE_URL']}/api/2/things/{thing['thingId']}"
     params = {"thingId" : thing["thingId"]}
     if policy is not None:
         thing["policyId"] = policy
     response = requests.put(url, data=json.dumps(thing), params=params, auth=HTTPBasicAuth('devops', 'foobar'))
     if response.status_code in [200, 201]:
         if logs:
-            print_time(f"✔️ Thing {thing["thingId"]} created successfully!")
-            return True
+            print_time(f"✔️ Thing {thing['thingId']} created successfully!")
+        return True
     else:
         if logs:
-            print_time(f"✖️ Error when creating thing {thing["thingId"]} : {response.text}.")
-            return False
+            print_time(f"✖️ Error when creating thing {thing['thingId']} : {response.text}.")
+        return False
 
 def get_thing(thing_id):
-    url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/things/{thing_id}"
+    url = f"{eclipse_config_data['DITTO_BASE_URL']}/api/2/things/{thing_id}"
     HEADERS = {
         "Accept": "application/json",
         "Content-Type": "application/json"
@@ -88,7 +90,7 @@ def get_thing(thing_id):
         print_time(f"Error: {response.text}")
 
 def put_policy(policy_id, logs=False, tentative=5):
-    url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/policies/{policy_id}"
+    url = f"{eclipse_config_data['DITTO_BASE_URL']}/api/2/policies/{policy_id}"
     HEADERS = {
         "Content-Type": "application/json",
         "Accept": "application/json",
@@ -114,8 +116,7 @@ def put_policy(policy_id, logs=False, tentative=5):
     data = json.dumps(policy_definition)
     response = requests.put(url, headers=HEADERS, params=params, data=data, auth=HTTPBasicAuth('devops', 'foobar'))
     if response.status_code == 201:
-        if logs:
-            print_time(f"✔️ Policy of id {policy_id} created successfully!")
+        print_time(f"✔️ Policy of id {policy_id} created successfully!")
         return True
     else:
         print_time(f"✖️ Error, policy of id {policy_id} couldn't be created : {response.text}")
@@ -126,7 +127,7 @@ def put_policy(policy_id, logs=False, tentative=5):
         return False
 
 def put_mqtt_connection():
-    url = f"{eclipse_config_data["DITTO_BASE_URL"]}/api/2/connections/mqtt_connection"
+    url = f"{eclipse_config_data['DITTO_BASE_URL']}/api/2/connections/mqtt_connection"
     HEADERS = {
         "Content-Type": "application/json",
         "Accept": "application/json",

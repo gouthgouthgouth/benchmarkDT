@@ -107,9 +107,11 @@ def start_dt_solution(dt_solution, logs=False):
         script_path = "twins_to_compare/orion_ld/run_orion_ld.sh"
     print_time("ℹ️ starting " + dt_solution + "...")
     if logs:
-        proc = subprocess.Popen(["bash", script_path],
+        proc = subprocess.Popen(
+            ["bash", script_path],
             stdout=subprocess.PIPE,
-            text=True)
+            text=True
+        )
     else:
         proc = subprocess.Popen(
             ["bash", script_path],
@@ -122,6 +124,8 @@ def start_dt_solution(dt_solution, logs=False):
         if "All containers are running." in line:
             print_time("✔️ Containers are up, continuing in 5s...")
             break
+        elif "is now healthy" in line:
+            print_time(line)
     time.sleep(5)
 
 def make_measurements(dt_solution, nb_entities, create_entities_before_measures=False, nb_seconds=60,
@@ -248,9 +252,7 @@ def make_measurements(dt_solution, nb_entities, create_entities_before_measures=
     print_time("ℹ️ Writing csvs and doing plots...")
     csv_files = write_csvs(file_datetime, dt_solution=dt_solution, file_name=file_name, lambdas_list=lambdas_list)
     plot_courbe_delay(file_name, beginning=start_time, dt_solution=dt_solution)
-    plot_courbe_delay(file_name, beginning=start_time, dt_solution=dt_solution)
     # plot_courbe_cpuram(file_datetime, file_name, beginning=start_time, dt_solution=dt_solution)
-    # time.sleep(3600)
     delete_entities(dt_solution, entities)
     stop_dt_solution(logs=logs)
     return csv_files
@@ -264,7 +266,7 @@ if __name__ == "__main__":
     # dt_solution = "stellio"
 
     # Nombre d'entités
-    nbe = 5
+    # nbe = 50
     # Durée des mesures
     nb_seconds = 30
     # Frequency
@@ -274,31 +276,45 @@ if __name__ == "__main__":
     # Number of bytes per attribute
     bytes_per_attribute = 5
 
-    for dt_solution in ["ditto", "scorpio"]:
-        nbe = 5
-        csv_delay_files = make_measurements(dt_solution,
-                                           create_entities_before_measures=True,
-                                           nb_entities=nbe,
-                                           nb_seconds=nb_seconds,
-                                           uniform_law_enabled=True,
-                                           unif_frequency=nbe,
-                                           nb_attributes=nba,
-                                           bytes_per_attribute=bytes_per_attribute,
-                                           logs=True)
-        l = [10, 20, 5]
-        csv_delay_files = make_measurements(dt_solution,
-                                           create_entities_before_measures=True,
-                                           nb_entities=nbe,
-                                           nb_seconds=nb_seconds,
-                                           mmpp_enabled=True,
-                                           lambdas=l,
-                                           # P=np.array([[0.99, 0.01, 0.0], [0.005, 0.99, 0.005], [0.0, 0.01, 0.99]]),
-                                           P=np.array([[0.995, 0.005, 0],
-                                                   [0.005, 0.99, 0.005],
-                                                   [0, 0.005, 0.995]]),
-                                           nb_attributes=nba,
-                                           bytes_per_attribute=bytes_per_attribute,
-                                           logs=True)
+    for nbe in [70, 80, 90]:
+        for dt_solution in ["ditto", "orion_ld"]:
+            csv_delay_files = make_measurements(dt_solution,
+                                               create_entities_before_measures=True,
+                                               nb_entities=nbe,
+                                               nb_seconds=nb_seconds,
+                                               uniform_law_enabled=True,
+                                               unif_frequency=nbe,
+                                               nb_attributes=nba,
+                                               bytes_per_attribute=bytes_per_attribute,
+                                               logs=False)
+
+    dt_solution = "orion_ld"
+
+    # for nbe in [40, 50, 60, 70, 80]:
+    #     csv_delay_files = make_measurements(dt_solution,
+    #                                        create_entities_before_measures=True,
+    #                                        nb_entities=nbe,
+    #                                        nb_seconds=nb_seconds,
+    #                                        uniform_law_enabled=True,
+    #                                        unif_frequency=nbe,
+    #                                        nb_attributes=nba,
+    #                                        bytes_per_attribute=bytes_per_attribute,
+    #                                        logs=False)
+    # dt_solution = "scorpio"
+    # for l in ([10, 20, 5], [5, 10, 2], [20, 40, 10]):
+    #     csv_delay_files = make_measurements(dt_solution,
+    #                                        create_entities_before_measures=True,
+    #                                        nb_entities=nbe,
+    #                                        nb_seconds=nb_seconds,
+    #                                        mmpp_enabled=True,
+    #                                        lambdas=l,
+    #                                        # P=np.array([[0.99, 0.01, 0.0], [0.005, 0.99, 0.005], [0.0, 0.01, 0.99]]),
+    #                                        P=np.array([[0.995, 0.005, 0],
+    #                                                [0.005, 0.99, 0.005],
+    #                                                [0, 0.005, 0.995]]),
+    #                                        nb_attributes=nba,
+    #                                        bytes_per_attribute=bytes_per_attribute,
+    #                                        logs=False)
     # dt_solution = "ditto"
     # for l in ([25, 50, 10], [40, 80, 16], [30, 60, 15]):
     #     csv_delay_files = make_measurements(dt_solution,

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Define variables
-MOSQUITTO_DOCKER_COMPOSE_LOCATION="/home/gauthier-le-tat/PycharmProjects/benchmarkDT/mosquitto"
-FIWARE_DOCKER_COMPOSE_LOCATION="/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/stellio/stellio_files"
+MOSQUITTO_DOCKER_COMPOSE_LOCATION="/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/mosquitto"
+FIWARE_DOCKER_COMPOSE_LOCATION="/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/twins_to_compare/stellio/stellio_files"
 MOSQUITTO_CONTAINER="mosquitto"
 STELLIO_SEARCH_CONTAINER="stellio-search"
 POSTGRES_CONTAINER="stellio-postgres"

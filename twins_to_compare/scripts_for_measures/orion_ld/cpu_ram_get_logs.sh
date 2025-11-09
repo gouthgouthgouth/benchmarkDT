@@ -7,7 +7,7 @@ CONTAINERS=(
   orion_ld-mongo-iot-1
 )
 
-OUTPUT_FILE=/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/orion_ld/measures/"$1-cpu_ram_sum"
+OUTPUT_FILE=/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/orion_ld/measures/"$1-cpu_ram_sum"
 
 # Initialize CSV
  echo "Timestamp, CPU%, MemUsageMiB, MemTotalMiB" > "$OUTPUT_FILE"

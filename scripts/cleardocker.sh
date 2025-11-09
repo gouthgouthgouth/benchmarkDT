@@ -10,4 +10,4 @@ docker volume rm $(docker volume ls -q)
 
 docker system prune -a --volumes -f
 
-sleep 1
+sleep 10

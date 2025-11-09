@@ -12,9 +12,9 @@ mqtt_delay = 0
 
 # Dossiers des résultats
 folders = {
-    "orion_ld": "/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/orion_ld/results",
-    "scorpio": "/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/scorpio/results",
-    "ditto": "/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/ditto/results"
+    "orion_ld": "/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/orion_ld/results",
+    "scorpio": "/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/scorpio/results",
+    "ditto": "/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/ditto/results"
 }
 
 # Expression régulière pour les fichiers -delays.csv uniquement
@@ -24,7 +24,7 @@ pattern = re.compile(
 )
 
 # Préparation dossier de sortie
-output_dir = "/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/comparison results/plots"
+output_dir = "/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/comparison results/plots"
 os.makedirs(output_dir, exist_ok=True)
 
 # Extraction des métadonnées depuis les noms de fichiers

@@ -236,9 +236,9 @@ def scorpio_delete_road_segments_and_sensors(road_segments):
             response = requests.delete(url_with_id, headers=headers)
 
             if response.status_code in (204, 404):
-                print_time(f"🗑️  Deleted {segment["id"]}")
+                print_time(f"🗑️  Deleted {segment['id']}")
             else:
-                print_time(f"❌ Failed to delete {segment["id"]}: {response.status_code} {response.text}")
+                print_time(f"❌ Failed to delete {segment['id']}: {response.status_code} {response.text}")
         except Exception as e:
             print_time(f"Erreur lors de la suppression de {segment['id']}: {e}")
 
@@ -248,13 +248,13 @@ def scorpio_delete_road_segments_and_sensors(road_segments):
     }
     # Delete all devices
     try:
-        r = requests.get(f"{scorpio_config_data["IOT_AGENT_ADDRESS"]}/iot/devices", headers=headers)
+        r = requests.get(f"{scorpio_config_data['IOT_AGENT_ADDRESS']}/iot/devices", headers=headers)
         r.raise_for_status()
         devices = r.json().get("devices", [])
         for device in devices:
             dev_id = device["device_id"]
             try:
-                resp = requests.delete(f"{scorpio_config_data["IOT_AGENT_ADDRESS"]}/iot/devices/{dev_id}", headers=headers)
+                resp = requests.delete(f"{scorpio_config_data['IOT_AGENT_ADDRESS']}/iot/devices/{dev_id}", headers=headers)
                 if resp.status_code == 204:
                     print_time(f"🗑️  Deleted device {dev_id}")
                 else:
@@ -266,14 +266,14 @@ def scorpio_delete_road_segments_and_sensors(road_segments):
 
     # Delete all service groups
     try:
-        r = requests.get(f"{scorpio_config_data["IOT_AGENT_ADDRESS"]}/iot/services", headers=headers)
+        r = requests.get(f"{scorpio_config_data['IOT_AGENT_ADDRESS']}/iot/services", headers=headers)
         r.raise_for_status()
         services = r.json().get("services", [])
         for svc in services:
             apikey = svc["apikey"]
             resource = svc["resource"]
             try:
-                url = f"{scorpio_config_data["IOT_AGENT_ADDRESS"]}/iot/services?apikey={apikey}&resource={resource}"
+                url = f"{scorpio_config_data['IOT_AGENT_ADDRESS']}/iot/services?apikey={apikey}&resource={resource}"
                 resp = requests.delete(url, headers=headers)
                 if resp.status_code == 204:
                     print_time(f"🗑️  Deleted service {apikey}")

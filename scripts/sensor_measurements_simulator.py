@@ -96,7 +96,6 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
 
     MQTT_BROKER = "localhost"
     payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
-    data = json.dumps(payload)
 
     client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
     interval = 1 / (msg_frequency_hz)
@@ -107,7 +106,7 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
     time.sleep(sleep_time)
 
     next_time = time.perf_counter()
-    print_time("ℹ️ Sending messages...")
+    print_time("Sending messages...")
 
     try:
         while not sent >= nb_messages:
@@ -116,31 +115,30 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
                 MQTT_TOPIC = f"my.namespace/{device_ids[i]}/things/twin/commands/modify"
                 payload["topic"] = MQTT_TOPIC
             elif dt_solution == "scorpio":
-                MQTT_TOPIC = f"/json/{scorpio_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+                MQTT_TOPIC = f"/json/{scorpio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             elif dt_solution == "orion_ld":
-                MQTT_TOPIC = f"/json/{orion_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+                MQTT_TOPIC = f"/json/{orion_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             elif dt_solution == "stellio":
-                MQTT_TOPIC = f"/json/{stellio_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
-            client.publish(MQTT_TOPIC, data)
+                MQTT_TOPIC = f"/json/{stellio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             data = json.dumps(payload)
-            # payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
+            client.publish(MQTT_TOPIC, data)
 
             # attendre précisément jusqu'au prochain envoi
             next_time += interval
+            sleep_time = next_time - time.perf_counter()
+            if sleep_time > 0:
+                time.sleep(sleep_time)
             sent += 1
             if i < len(device_ids) - 1:
                 i += 1
             else:
                 i = 0
-            sleep_time = next_time - time.perf_counter()
-            if sleep_time > 0:
-                time.sleep(sleep_time)
 
     except KeyboardInterrupt:
         client.loop_stop()
         client.disconnect()
 
-    print_time("✔️ All messages have been sent")
+    print_time("All messages have been sent")
 
 def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, start_time, nb_attributes, bytes_per_attribute):
     client = mqtt.Client()
@@ -153,7 +151,7 @@ def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, s
     MQTT_BROKER = "localhost"
     payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
 
-    print_time("ℹ️ Sending messages with Poisson intervals...")
+    print_time("Sending messages with Poisson intervals...")
     t0 = time.time()
     i = 0
 
@@ -168,11 +166,11 @@ def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, s
                 MQTT_TOPIC = f"my.namespace/{device_ids[i]}/things/twin/commands/modify"
                 payload["topic"] = MQTT_TOPIC
             elif dt_solution == "scorpio":
-                MQTT_TOPIC = f"/json/{scorpio_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+                MQTT_TOPIC = f"/json/{scorpio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             elif dt_solution == "orion_ld":
-                MQTT_TOPIC = f"/json/{orion_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+                MQTT_TOPIC = f"/json/{orion_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             elif dt_solution == "stellio":
-                MQTT_TOPIC = f"/json/{stellio_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+                MQTT_TOPIC = f"/json/{stellio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             data = json.dumps(payload)
             client.publish(MQTT_TOPIC, data)
 
@@ -186,7 +184,7 @@ def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, s
         client.loop_stop()
         client.disconnect()
 
-    print_time("✔️ All Poisson-distributed messages have been sent")
+    print_time("All Poisson-distributed messages have been sent")
 
 def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, start_time, nb_attributes, bytes_per_attribute, center_ratio=0.5, sigma_ratio=0.1):
     client = mqtt.Client()
@@ -213,7 +211,7 @@ def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, sta
     sleep_time = (start_time - datetime.now(tz=tz)).total_seconds()
     time.sleep(sleep_time)
 
-    print_time("ℹ️ Sending messages with gaussian time distribution...")
+    print_time("Sending messages with gaussian time distribution...")
 
     start_perf = time.perf_counter()
     try:
@@ -228,11 +226,11 @@ def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, sta
                 MQTT_TOPIC = f"my.namespace/{device_ids[i]}/things/twin/commands/modify"
                 payload["topic"] = MQTT_TOPIC
             elif dt_solution == "scorpio":
-                MQTT_TOPIC = f"/json/{scorpio_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+                MQTT_TOPIC = f"/json/{scorpio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             elif dt_solution == "orion_ld":
-                MQTT_TOPIC = f"/json/{orion_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+                MQTT_TOPIC = f"/json/{orion_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             elif dt_solution == "stellio":
-                MQTT_TOPIC = f"/json/{stellio_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+                MQTT_TOPIC = f"/json/{stellio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             data = json.dumps(payload)
             client.publish(MQTT_TOPIC, data)
 
@@ -245,7 +243,7 @@ def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, sta
         client.loop_stop()
         client.disconnect()
 
-    print_time("✔️ All gaussian-distributed messages have been sent")
+    print_time("All gaussian-distributed messages have been sent")
     return start_time
 
 
@@ -276,7 +274,7 @@ def generate_mmpp_lambda_timestamps(lambdas, nb_seconds,
     return lambdas_time
 
 
-def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time, nb_attributes, bytes_per_attribute, queue):
+def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time, nb_attributes, bytes_per_attribute):
     """
         Defines the Markov Modulated Poisson Process for sending messages
 
@@ -293,13 +291,11 @@ def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time,
 
     MQTT_BROKER = "localhost"
     payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
-    data = json.dumps(payload)
     lambdas_time = generate_mmpp_lambda_timestamps(lambdas=lambdas,
                                                    nb_seconds=nb_seconds,
                                                    P=P)
-    queue.put(lambdas_time)
     poisson_lambda = lambdas_time[0][1]
-    print_time("ℹ️ Sending messages with MMPP intervals...")
+    print_time("Sending messages with Poisson intervals...")
     t0 = time.time()
     i, lambda_index = 0, 0
 
@@ -312,38 +308,35 @@ def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time,
         while time_since_start < nb_seconds:
             current_time = time.time()
 
-            if len(lambdas) > 1 and lambda_index < len(lambdas_time) - 1:
-                if time_since_start >= lambdas_time[lambda_index + 1][0]:
-                    poisson_lambda = poisson_lambda = lambdas_time[lambda_index + 1][1]
-                    lambda_index += 1
+            if time_since_start >= lambdas_time[lambda_index + 1][0]:
+                poisson_lambda = poisson_lambda = lambdas_time[lambda_index + 1][1]
+                lambda_index += 1
+
             interval = np.random.exponential(1 / poisson_lambda)
             if dt_solution == "ditto":
                 payload["value"]["measuredAt"] = datetime.now(tz=tz).isoformat()
                 MQTT_TOPIC = f"my.namespace/{device_ids[i]}/things/twin/commands/modify"
                 payload["topic"] = MQTT_TOPIC
             elif dt_solution == "scorpio":
-                MQTT_TOPIC = f"/json/{scorpio_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+                MQTT_TOPIC = f"/json/{scorpio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             elif dt_solution == "orion_ld":
-                MQTT_TOPIC = f"/json/{orion_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
+                MQTT_TOPIC = f"/json/{orion_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             elif dt_solution == "stellio":
-                MQTT_TOPIC = f"/json/{stellio_config_data["apikey"]}/TrafficFlowSensor{i + 1}/attrs"
-
-            client.publish(MQTT_TOPIC, data)
+                MQTT_TOPIC = f"/json/{stellio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             data = json.dumps(payload)
+            client.publish(MQTT_TOPIC, data)
+
             payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
 
             if i < len(device_ids) - 1:
                 i += 1
             else:
                 i = 0
-            try:
-                time.sleep(interval - time.time() + current_time)
-            except:
-                pass
+            time.sleep(interval - time.time() + current_time)
             time_since_start = time.time() - t0
 
     except KeyboardInterrupt:
         client.loop_stop()
         client.disconnect()
 
-    print_time("✔️ All MMPP-distributed messages have been sent")
+    print_time("All MMPP-distributed messages have been sent")

@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 import os
 
 def record_logs_mosquitto(date, dt_solution):
-    output_folder = f"/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/measures/"
+    output_folder = f"/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/{dt_solution}/measures/"
     BROKER = "localhost"
     PORT = 1883
     os.makedirs("measures_raw", exist_ok=True)

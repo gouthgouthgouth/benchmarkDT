@@ -1,5 +1,5 @@
 
-RAM_LIMIT="2g"
+RAM_LIMIT="4g"
 CPU_LIMIT="2.0"
 MQTT_BROKER = "mosquitto"
 MQTT_PORT = 1883

@@ -12,7 +12,7 @@ CONTAINERS=(
   docker-swagger-ui-1
 )
 
-OUTPUT_FILE=/home/gauthier-le-tat/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/ditto/measures/"$1-cpu_ram_sum"
+OUTPUT_FILE=/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/ditto/measures/"$1-cpu_ram_sum"
 
 
 #echo "Starting CPU/RAM monitoring for selected containers..."
