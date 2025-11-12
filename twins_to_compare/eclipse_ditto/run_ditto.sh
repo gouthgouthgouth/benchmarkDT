@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Define variables
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MOSQUITTO_DOCKER_COMPOSE_LOCATION="$SCRIPT_DIR/mosquitto"
-DITTO_DOCKER_COMPOSE_LOCATION="$SCRIPT_DIR/twins_to_compare/eclipse_ditto/ditto/deployment/docker"
+PROJECT_ROOT="$(pwd)"
+MOSQUITTO_DOCKER_COMPOSE_LOCATION="$PROJECT_ROOT/mosquitto"
+DITTO_DOCKER_COMPOSE_LOCATION="$PROJECT_ROOT/twins_to_compare/eclipse_ditto/ditto/deployment/docker"
 NETWORK_NAME="external_network"
 CONTAINERS=("docker-gateway-1" "docker-things-1" "docker-things-search-1" "docker-connectivity-1" "docker-policies-1" "mosquitto")
 echo ok

@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Define variables
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MOSQUITTO_DOCKER_COMPOSE_LOCATION="$SCRIPT_DIR/mosquitto"
-FIWARE_DOCKER_COMPOSE_LOCATION="$SCRIPT_DIR/twins_to_compare/stellio/stellio_files"
+PROJECT_ROOT="$(pwd)"
+MOSQUITTO_DOCKER_COMPOSE_LOCATION="$PROJECT_ROOT/mosquitto"
+FIWARE_DOCKER_COMPOSE_LOCATION="$PROJECT_ROOT/twins_to_compare/stellio/stellio_files"
 MOSQUITTO_CONTAINER="mosquitto"
 STELLIO_SEARCH_CONTAINER="stellio-search"
 POSTGRES_CONTAINER="stellio-postgres"

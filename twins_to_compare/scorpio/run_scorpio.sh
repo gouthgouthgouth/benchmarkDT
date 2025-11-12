@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Define variables
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MOSQUITTO_DOCKER_COMPOSE_LOCATION="$SCRIPT_DIR/mosquitto"
-FIWARE_DOCKER_COMPOSE_LOCATION="$SCRIPT_DIR/twins_to_compare/scorpio"
+PROJECT_ROOT="$(pwd)"
+MOSQUITTO_DOCKER_COMPOSE_LOCATION="$PROJECT_ROOT/mosquitto"
+FIWARE_DOCKER_COMPOSE_LOCATION="$PROJECT_ROOT/twins_to_compare/scorpio"
 MOSQUITTO_CONTAINER="mosquitto"
 SCORPIO_CONTAINER="scorpio-scorpio-1"
 POSTGRES_CONTAINER="scorpio-postgres-1"
