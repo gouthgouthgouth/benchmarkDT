@@ -274,7 +274,7 @@ def generate_mmpp_lambda_timestamps(lambdas, nb_seconds,
     return lambdas_time
 
 
-def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time, nb_attributes, bytes_per_attribute):
+def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time, nb_attributes, bytes_per_attribute, queue):
     """
         Defines the Markov Modulated Poisson Process for sending messages
 
@@ -291,11 +291,13 @@ def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time,
 
     MQTT_BROKER = "localhost"
     payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
+    data = json.dumps(payload)
     lambdas_time = generate_mmpp_lambda_timestamps(lambdas=lambdas,
                                                    nb_seconds=nb_seconds,
                                                    P=P)
+    queue.put(lambdas_time)
     poisson_lambda = lambdas_time[0][1]
-    print_time("Sending messages with Poisson intervals...")
+    print_time("ℹ️ Sending messages with MMPP intervals...")
     t0 = time.time()
     i, lambda_index = 0, 0
 
@@ -308,10 +310,10 @@ def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time,
         while time_since_start < nb_seconds:
             current_time = time.time()
 
-            if time_since_start >= lambdas_time[lambda_index + 1][0]:
-                poisson_lambda = poisson_lambda = lambdas_time[lambda_index + 1][1]
-                lambda_index += 1
-
+            if len(lambdas) > 1 and lambda_index < len(lambdas_time) - 1:
+                if time_since_start >= lambdas_time[lambda_index + 1][0]:
+                    poisson_lambda = poisson_lambda = lambdas_time[lambda_index + 1][1]
+                    lambda_index += 1
             interval = np.random.exponential(1 / poisson_lambda)
             if dt_solution == "ditto":
                 payload["value"]["measuredAt"] = datetime.now(tz=tz).isoformat()
@@ -323,20 +325,23 @@ def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time,
                 MQTT_TOPIC = f"/json/{orion_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             elif dt_solution == "stellio":
                 MQTT_TOPIC = f"/json/{stellio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
-            data = json.dumps(payload)
-            client.publish(MQTT_TOPIC, data)
 
+            client.publish(MQTT_TOPIC, data)
+            data = json.dumps(payload)
             payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
 
             if i < len(device_ids) - 1:
                 i += 1
             else:
                 i = 0
-            time.sleep(interval - time.time() + current_time)
+            try:
+                time.sleep(interval - time.time() + current_time)
+            except:
+                pass
             time_since_start = time.time() - t0
 
     except KeyboardInterrupt:
         client.loop_stop()
         client.disconnect()
 
-    print_time("All MMPP-distributed messages have been sent")
+    print_time("✔️ All MMPP-distributed messages have been sent")

@@ -8,10 +8,11 @@ from configs.config import eclipse_config_data
 from scripts.utils import print_time
 
 def eclipse_create_things(ditto_things, logs=False):
-    policy_created = put_policy("my.namespace:RoadSegment", logs=logs, tentative=5)
+    policy_Id = "my.namespace:RoadSegment"
+    policy_created = put_policy(policy_id=policy_Id, logs=logs, tentative=5)
     things_created = 0
     for thing in ditto_things:
-        if put_thing(thing, policy="my.namespace:RoadSegment", logs=logs):
+        if put_thing(thing, policy_id=policy_Id, logs=logs):
             things_created += 1
     if things_created == len(ditto_things):
         print_time("✔️ Things created successfully!")
@@ -21,7 +22,6 @@ def eclipse_create_things(ditto_things, logs=False):
         return True
     else:
         return False
-
 
 def eclipse_delete_things(entities):
     pass
@@ -61,11 +61,11 @@ def transform_jsonld_to_ditto(input_file, number_required=None):
 
     return ditto_things
 
-def put_thing(thing, policy=None, logs=False):
+def put_thing(thing, policy_id=None, logs=False):
     url = f"{eclipse_config_data['DITTO_BASE_URL']}/api/2/things/{thing['thingId']}"
     params = {"thingId" : thing["thingId"]}
-    if policy is not None:
-        thing["policyId"] = policy
+    if policy_id is not None:
+        thing["policyId"] = policy_id
     response = requests.put(url, data=json.dumps(thing), params=params, auth=HTTPBasicAuth('devops', 'foobar'))
     if response.status_code in [200, 201]:
         if logs:
