@@ -15,6 +15,14 @@ OUTPUT_FILE=/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/twins_to_compare/scr
 trap "echo 'Terminal closed, stopping monitoring.'; exit 0" SIGHUP SIGINT SIGTERM
 
 while true; do
+
+  for c in "${CONTAINERS[@]}"; do
+    if ! docker ps -q -f name="^${c}$" | grep -q .; then
+      echo "Le conteneur $c n'existe plus. Arrêt du script de mesure de CPU/RAM."
+      exit 0
+    fi
+  done
+
   CPUP_SUM=0
   MEMUSAGE_SUM=0
   MEMTOTAL_SUM=0
@@ -35,4 +43,5 @@ done <<< "$STATS_LIST"
 
   TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S.%3N")
   echo "$TIMESTAMP, $CPUP_SUM, $MEMUSAGE_SUM, $MEMTOTAL_SUM" >> "$OUTPUT_FILE"
+  sleep 1
 done
