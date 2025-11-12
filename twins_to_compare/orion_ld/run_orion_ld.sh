@@ -1,8 +1,11 @@
 #!/bin/bash
 
 # Define variables
-MOSQUITTO_DOCKER_COMPOSE_LOCATION="/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/mosquitto"
-FIWARE_DOCKER_COMPOSE_LOCATION="/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/twins_to_compare/orion_ld"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MOSQUITTO_DOCKER_COMPOSE_LOCATION="$SCRIPT_DIR/mosquitto"
+FIWARE_DOCKER_COMPOSE_LOCATION="$SCRIPT_DIR/twins_to_compare/orion_ld"
+
 MOSQUITTO_CONTAINER="mosquitto"
 ORION_CONTAINER="orion_ld-orion-ld-1"
 MONGO_ORION_CONTAINER="orion_ld-mongo-orion-1"

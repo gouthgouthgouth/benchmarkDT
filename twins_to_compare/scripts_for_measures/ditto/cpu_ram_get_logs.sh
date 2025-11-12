@@ -12,7 +12,8 @@ CONTAINERS=(
   docker-swagger-ui-1
 )
 
-OUTPUT_FILE=/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/twins_to_compare/scripts_for_measures/ditto/measures/"$1-cpu_ram_sum"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+OUTPUT_FILE="$SCRIPT_DIR/twins_to_compare/scripts_for_measures/ditto/measures/$1-cpu_ram_sum"
 
 
 #echo "Starting CPU/RAM monitoring for selected containers..."

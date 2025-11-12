@@ -1,9 +1,10 @@
 #!/bin/bash
 
 # Define variables
-MOSQUITTO_DOCKER_COMPOSE_LOCATION="/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/mosquitto/mosquitto"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MOSQUITTO_DOCKER_COMPOSE_LOCATION="$SCRIPT_DIR/mosquitto"
+DITTO_DOCKER_COMPOSE_LOCATION="$SCRIPT_DIR/twins_to_compare/eclipse_ditto/ditto/deployment/docker"
 NETWORK_NAME="external_network"
-DITTO_DOCKER_COMPOSE_LOCATION="/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT/twins_to_compare/eclipse_ditto/ditto/deployment/docker"
 CONTAINERS=("docker-gateway-1" "docker-things-1" "docker-things-search-1" "docker-connectivity-1" "docker-policies-1" "mosquitto")
 echo ok
 # Check if the Docker network exists
