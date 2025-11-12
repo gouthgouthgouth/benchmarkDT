@@ -285,7 +285,7 @@ def write_csvs_orion(file_datetime, file_name):
             message_id = str(occurence) + "_" + thing_id
             if (thing_id, occurence) in things_messages:
                 delay = round((things_messages[(thing_id, occurence)] - mosquitto_messages[
-                    (thing_id, occurence)]).total_seconds(), 3)
+                    (thing_id, occurence)]).total_seconds() - 3600, 3)
                 delays.append(delay)
             else:
                 delay = "Error, msg not received or log wasn't captured."
