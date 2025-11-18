@@ -8,19 +8,16 @@ import pandas as pd
 # Parameters
 duration = "18000"
 lambdas = "10-20-40"
-
 # Laisser à None pour calcul automatique
-bin_size = 5
+bin_size = 3
 x_min = None
 x_max = None
 
 ### Début du script
-
 csv_filepaths_ditto = sorted(glob.glob("violin_plots_data/ditto/results/*.csv"))
 csv_filepaths_orion = sorted(glob.glob("violin_plots_data/orion_ld/results/*.csv"))
 csv_filepaths_scorpio = sorted(glob.glob("violin_plots_data/scorpio/results/*.csv"))
 all_files = csv_filepaths_scorpio + csv_filepaths_orion + csv_filepaths_ditto
-
 toremove = []
 for file in all_files:
     if "lambdas_list" in file:
@@ -102,7 +99,6 @@ colors = {
     "scorpio": "green"    # Vert
 }
 for ax, f in zip(axes, dfs):
-
     # Définition des paramètres en fonction des entrées utilisateur
     if "orion" in f:
         title = "Fiware orion_ld"
@@ -118,10 +114,9 @@ for ax, f in zip(axes, dfs):
         if x_min == 0:
             x_min = -0.1 * dfs[f]["delai"].max()
     if x_max is None:
-        x_max = dfs[f]["delai"].max()
+        x_max = max([dfs[file]["delai"].max() * 1.05 for file in dfs])
     if bins is None:
         bins = 3
-
     sns.histplot(
         data=dfs[f],
         x="delai",
@@ -138,6 +133,5 @@ for ax, f in zip(axes, dfs):
     ax.set_xlabel("Delay (ms)")
     ax.set_ylabel("Frequency")
     ax.set_xlim(x_min, x_max)
-
 plt.tight_layout()
 plt.savefig(f"histogram_plots_figs/duration_{duration}s_lambdas{lambdas}")
