@@ -11,8 +11,8 @@ csv_filepaths_scorpio = sorted(glob.glob("violin_plots_data/scorpio/results/*.cs
 
 all_files = csv_filepaths_scorpio + csv_filepaths_orion + csv_filepaths_ditto
 
-duration = "18000"
-lambdas = "5-10-20"
+duration = "3600"
+lambdas = "20-40-80"
 
 toremove = []
 for file in all_files:
@@ -42,7 +42,7 @@ colonnes = {}
 all_values = []
 all_labels = []
 
-dfs = []
+dfs = {}
 
 for f in files_to_plot:
     delais = extraire_colonnes_csv(f)["delay (s)"]
@@ -67,7 +67,6 @@ for f in files_to_plot:
 
     # mask_bad = pd.to_numeric(df["delai"], errors="coerce").isna()
     # print(df.loc[mask_bad].head(20))
-
     df["delai"] = (
         df["delai"]
         .astype(str)
@@ -77,7 +76,8 @@ for f in files_to_plot:
         .str.replace("\"", "")
     )
     df["delai"] = pd.to_numeric(df["delai"], errors="coerce")
-    dfs.append(df)
+    df["delai"] = df["delai"] * 1000
+    dfs[f] = df
     print(df["delai"].dtype)
     print(df["delai"].describe())
 
@@ -88,12 +88,42 @@ fig, axes = plt.subplots(1, n, figsize=(6 * n, 6), sharey=True)
 if n == 1:
     axes = [axes]
 
-for ax, df in zip(axes, dfs):
-    sns.violinplot(data=df, x="source", y="delai",
-                   inner="quartile", linewidth=1.2, palette="Set1", ax=ax)
-    ax.set_title(df["dataset"].iloc[0] if "dataset" in df else "dataset")
+colors = {
+    "orion_ld": "#0000ff",  # Bleu
+    "ditto": "#ff0000",     # Orange
+    "scorpio": "#00ff00"    # Vert
+}
+
+for ax, f in zip(axes, dfs):
+
+    if "orion" in f:
+        title = "Fiware orion_ld"
+        source_name = "orion_ld"
+    elif "ditto" in f:
+        title = "Eclipse ditto"
+        source_name = "ditto"
+    elif "scorpio" in f:
+        title = "Fiware scorpio"
+        source_name = "scorpio"
+
+    sns.violinplot(
+        data=dfs[f],
+        x="source",
+        y="delai",
+        hue="source",
+        legend=False,
+        inner="quartile",
+        linewidth=1.2,
+        palette=[colors[source_name]],
+        ax=ax
+    )
+
+    ax.set_title(title)
     ax.grid(axis="y", linestyle="--", alpha=0.4)
-    ax.set_ylim(0, 0.1)
+    ax.set_ylim(0, 50)
+    ax.set_xlabel("")
+    ax.set_ylabel("Délai (ms)")
+    ax.set_xticklabels("")
     # ax.yaxis.set_major_locator(plt.MultipleLocator(0.005))
 
 plt.tight_layout()
