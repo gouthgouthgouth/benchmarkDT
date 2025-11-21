@@ -14,9 +14,9 @@ x_min = None
 x_max = None
 
 ### Début du script
-csv_filepaths_ditto = sorted(glob.glob("violin_plots_data/ditto/results/*.csv"))
-csv_filepaths_orion = sorted(glob.glob("violin_plots_data/orion_ld/results/*.csv"))
-csv_filepaths_scorpio = sorted(glob.glob("violin_plots_data/scorpio/results/*.csv"))
+csv_filepaths_ditto = sorted(glob.glob("violin_plots_data_4g/ditto/results/*.csv"))
+csv_filepaths_orion = sorted(glob.glob("violin_plots_data_4g/orion_ld/results/*.csv"))
+csv_filepaths_scorpio = sorted(glob.glob("violin_plots_data_4g/scorpio/results/*.csv"))
 all_files = csv_filepaths_scorpio + csv_filepaths_orion + csv_filepaths_ditto
 toremove = []
 for file in all_files:
