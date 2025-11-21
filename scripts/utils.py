@@ -1,11 +1,12 @@
 import json
 import subprocess
 import datetime
+import sys
 from copy import deepcopy
 
 
-def print_time(text_to_print):
-    print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3] + ": " + text_to_print)
+def print_time(text_to_print, end="\n"):
+    print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3] + ": " + text_to_print, end=end)
 
 def get_road_segments_from_json(input_file, number_required=None):
     with open(input_file, "r") as file:

@@ -106,7 +106,7 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
     time.sleep(sleep_time)
 
     next_time = time.perf_counter()
-    print_time("Sending messages...")
+    print_time("ℹ️ Sending messages...")
 
     try:
         while not sent >= nb_messages:
@@ -122,6 +122,7 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
                 MQTT_TOPIC = f"/json/{stellio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
             data = json.dumps(payload)
             client.publish(MQTT_TOPIC, data)
+            payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
 
             # attendre précisément jusqu'au prochain envoi
             next_time += interval
@@ -138,7 +139,7 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
         client.loop_stop()
         client.disconnect()
 
-    print_time("All messages have been sent")
+    print_time("✔️ All messages have been sent")
 
 def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, start_time, nb_attributes, bytes_per_attribute):
     client = mqtt.Client()
@@ -326,8 +327,8 @@ def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time,
             elif dt_solution == "stellio":
                 MQTT_TOPIC = f"/json/{stellio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
 
-            client.publish(MQTT_TOPIC, data)
             data = json.dumps(payload)
+            client.publish(MQTT_TOPIC, data)
             payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
 
             if i < len(device_ids) - 1:

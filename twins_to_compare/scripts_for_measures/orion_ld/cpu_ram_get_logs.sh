@@ -8,10 +8,10 @@ CONTAINERS=(
 )
 
 PROJECT_ROOT="$(pwd)"
-OUTPUT_FILE="$PROJECT_ROOT/twins_to_compare/scripts_for_measures/orion_ld/measures/"$1-cpu_ram_sum"
+OUTPUT_FILE="$PROJECT_ROOT/twins_to_compare/scripts_for_measures/orion_ld/measures/"$1-cpu_ram_sum
 
 # Initialize CSV
- echo "Timestamp, CPU%, MemUsageMiB, MemTotalMiB" > "$OUTPUT_FILE"
+echo "Timestamp, CPU%, MemUsageMiB, MemTotalMiB" > "$OUTPUT_FILE"
 
 trap "echo 'Terminal closed, stopping monitoring.'; exit 0" SIGHUP SIGINT SIGTERM
 
