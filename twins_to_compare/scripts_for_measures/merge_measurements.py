@@ -3,8 +3,8 @@ import csv
 from collections import defaultdict
 
 #solution
-solution = "ditto"
-# solution = "orion_ld"
+# solution = "ditto"
+solution = "orion_ld"
 # solution = "scorpio"
 
 # Chemin du dossier source + chemin du résultat des fichiers CSV
