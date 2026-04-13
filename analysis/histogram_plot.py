@@ -1,9 +1,10 @@
-import csv
 import glob
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import pandas as pd
+
+from analysis.common import extraire_colonnes_csv
 
 # Parameters
 duration = "18000"
@@ -29,16 +30,6 @@ files_to_plot = []
 for f in all_files:
     if duration in f and lambdas in f:
         files_to_plot.append(f)
-
-def extraire_colonnes_csv(filepath):
-    with open(filepath, newline='', encoding='utf-8') as f:
-        lecteur = csv.reader(f)
-        entetes = next(lecteur)
-        colonnes = [[] for _ in entetes]
-        for ligne in lecteur:
-            for i, valeur in enumerate(ligne):
-                colonnes[i].append(valeur)
-    return dict(zip(entetes, colonnes))
 
 colonnes = {}
 all_values = []

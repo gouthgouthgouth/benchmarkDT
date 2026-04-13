@@ -52,18 +52,32 @@ def generate_payload(dt_solution, nb_attributes, bytes_per_attr=10, tz=tz):
     else:
         raise ValueError(f"Unsupported dt_solution: {dt_solution}")
 
+
+def _extract_device_ids(devices, dt_solution, client):
+    if dt_solution == "scorpio" or dt_solution == "orion_ld":
+        return [device["id"].split(":")[-1] for device in devices]
+    elif dt_solution == "ditto":
+        client.username_pw_set("devops", "foobar")
+        return [thing['thingId'].split(":")[-1] for thing in devices]
+
+
+def _build_mqtt_topic(dt_solution, device_ids, i):
+    if dt_solution == "ditto":
+        return f"my.namespace/{device_ids[i]}/things/twin/commands/modify"
+    elif dt_solution == "scorpio":
+        return f"/json/{scorpio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
+    elif dt_solution == "orion_ld":
+        return f"/json/{orion_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
+
+
 def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds, start_time, nb_attributes, bytes_per_attribute):
     client = mqtt.Client()
-    if dt_solution == "scorpio" or dt_solution == "orion_ld":
-        device_ids = [device["id"].split(":")[-1] for device in devices]
-    elif dt_solution == "ditto":
-        device_ids = [thing['thingId'].split(":")[-1] for thing in devices]
-        client.username_pw_set("devops", "foobar")
+    device_ids = _extract_device_ids(devices, dt_solution, client)
 
-    MQTT_BROKER = "localhost"
+    mqtt_broker = "localhost"
     payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
 
-    client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
+    client.connect(mqtt_broker, MQTT_PORT, keepalive=60)
     interval = 1 / (msg_frequency_hz)
     nb_messages = nb_seconds * msg_frequency_hz
     sent = 0
@@ -76,16 +90,12 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
 
     try:
         while not sent >= nb_messages:
+            mqtt_topic = _build_mqtt_topic(dt_solution, device_ids, i)
             if dt_solution == "ditto":
                 payload["value"]["measuredAt"] = datetime.now(tz=tz).isoformat()
-                MQTT_TOPIC = f"my.namespace/{device_ids[i]}/things/twin/commands/modify"
-                payload["topic"] = MQTT_TOPIC
-            elif dt_solution == "scorpio":
-                MQTT_TOPIC = f"/json/{scorpio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
-            elif dt_solution == "orion_ld":
-                MQTT_TOPIC = f"/json/{orion_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
+                payload["topic"] = mqtt_topic
             data = json.dumps(payload)
-            client.publish(MQTT_TOPIC, data)
+            client.publish(mqtt_topic, data)
             payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
 
             # wait precisely until the next send
@@ -107,35 +117,27 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
 
 def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, start_time, nb_attributes, bytes_per_attribute):
     client = mqtt.Client()
-    if dt_solution == "scorpio" or dt_solution == "orion_ld":
-        device_ids = [device["id"].split(":")[-1] for device in devices]
-    elif dt_solution == "ditto":
-        device_ids = [thing['thingId'].split(":")[-1] for thing in devices]
-        client.username_pw_set("devops", "foobar")
+    device_ids = _extract_device_ids(devices, dt_solution, client)
 
-    MQTT_BROKER = "localhost"
+    mqtt_broker = "localhost"
     payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
 
     print_time("Sending messages with Poisson intervals...")
     t0 = time.time()
     i = 0
 
-    client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
+    client.connect(mqtt_broker, MQTT_PORT, keepalive=60)
     sleep_time = (start_time - datetime.now(tz=tz)).total_seconds()
     time.sleep(sleep_time)
 
     try:
         while time.time() - t0 < nb_seconds:
+            mqtt_topic = _build_mqtt_topic(dt_solution, device_ids, i)
             if dt_solution == "ditto":
                 payload["value"]["measuredAt"] = datetime.now(tz=tz).isoformat()
-                MQTT_TOPIC = f"my.namespace/{device_ids[i]}/things/twin/commands/modify"
-                payload["topic"] = MQTT_TOPIC
-            elif dt_solution == "scorpio":
-                MQTT_TOPIC = f"/json/{scorpio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
-            elif dt_solution == "orion_ld":
-                MQTT_TOPIC = f"/json/{orion_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
+                payload["topic"] = mqtt_topic
             data = json.dumps(payload)
-            client.publish(MQTT_TOPIC, data)
+            client.publish(mqtt_topic, data)
 
             interval = np.random.exponential(1 / poisson_lambda)
             time.sleep(interval)
@@ -151,13 +153,9 @@ def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, s
 
 def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, start_time, nb_attributes, bytes_per_attribute, center_ratio=0.5, sigma_ratio=0.1):
     client = mqtt.Client()
-    if dt_solution == "scorpio" or dt_solution == "orion_ld":
-        device_ids = [device["id"].split(":")[-1] for device in devices]
-    elif dt_solution == "ditto":
-        device_ids = [thing['thingId'].split(":")[-1] for thing in devices]
-        client.username_pw_set("devops", "foobar")
+    device_ids = _extract_device_ids(devices, dt_solution, client)
 
-    MQTT_BROKER = "localhost"
+    mqtt_broker = "localhost"
     payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
 
     center_time = nb_seconds * center_ratio
@@ -169,7 +167,7 @@ def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, sta
     send_times.sort()
 
     i = 0
-    client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
+    client.connect(mqtt_broker, MQTT_PORT, keepalive=60)
 
     sleep_time = (start_time - datetime.now(tz=tz)).total_seconds()
     time.sleep(sleep_time)
@@ -184,16 +182,12 @@ def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, sta
             if sleep_time > 0:
                 time.sleep(sleep_time)
 
+            mqtt_topic = _build_mqtt_topic(dt_solution, device_ids, i)
             if dt_solution == "ditto":
                 payload["value"]["measuredAt"] = datetime.now(tz=tz).isoformat()
-                MQTT_TOPIC = f"my.namespace/{device_ids[i]}/things/twin/commands/modify"
-                payload["topic"] = MQTT_TOPIC
-            elif dt_solution == "scorpio":
-                MQTT_TOPIC = f"/json/{scorpio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
-            elif dt_solution == "orion_ld":
-                MQTT_TOPIC = f"/json/{orion_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
+                payload["topic"] = mqtt_topic
             data = json.dumps(payload)
-            client.publish(MQTT_TOPIC, data)
+            client.publish(mqtt_topic, data)
 
             if i < len(device_ids) - 1:
                 i += 1
@@ -244,13 +238,9 @@ def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time,
         P: matrice de transition (ex: [[0.9,0.1],[0.2,0.8]])
         """
     client = mqtt.Client()
-    if dt_solution == "scorpio" or dt_solution == "orion_ld":
-        device_ids = [device["id"].split(":")[-1] for device in devices]
-    elif dt_solution == "ditto":
-        device_ids = [thing['thingId'].split(":")[-1] for thing in devices]
-        client.username_pw_set("devops", "foobar")
+    device_ids = _extract_device_ids(devices, dt_solution, client)
 
-    MQTT_BROKER = "localhost"
+    mqtt_broker = "localhost"
     payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
     data = json.dumps(payload)
     lambdas_time = generate_mmpp_lambda_timestamps(lambdas=lambdas,
@@ -262,7 +252,7 @@ def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time,
     t0 = time.time()
     i, lambda_index = 0, 0
 
-    client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)
+    client.connect(mqtt_broker, MQTT_PORT, keepalive=60)
     sleep_time = (start_time - datetime.now(tz=tz)).total_seconds()
     time.sleep(sleep_time)
 
@@ -276,17 +266,14 @@ def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time,
                     poisson_lambda = poisson_lambda = lambdas_time[lambda_index + 1][1]
                     lambda_index += 1
             interval = np.random.exponential(1 / poisson_lambda)
+
+            mqtt_topic = _build_mqtt_topic(dt_solution, device_ids, i)
             if dt_solution == "ditto":
                 payload["value"]["measuredAt"] = datetime.now(tz=tz).isoformat()
-                MQTT_TOPIC = f"my.namespace/{device_ids[i]}/things/twin/commands/modify"
-                payload["topic"] = MQTT_TOPIC
-            elif dt_solution == "scorpio":
-                MQTT_TOPIC = f"/json/{scorpio_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
-            elif dt_solution == "orion_ld":
-                MQTT_TOPIC = f"/json/{orion_config_data['apikey']}/TrafficFlowSensor{i + 1}/attrs"
+                payload["topic"] = mqtt_topic
 
             data = json.dumps(payload)
-            client.publish(MQTT_TOPIC, data)
+            client.publish(mqtt_topic, data)
             payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
 
             if i < len(device_ids) - 1:

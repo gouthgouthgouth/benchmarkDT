@@ -1,4 +1,3 @@
-import csv
 import pprint
 
 import matplotlib.pyplot as plt
@@ -7,41 +6,14 @@ import itertools
 import glob
 import re
 
+from analysis.common import extraire_colonnes_csv, get_distribution_list_from_percentiles
+
 linestyles = itertools.cycle(('-', '--', '-.', ':'))
 
 p_list = [0.5, 0.9, 0.99, 0.999, 1]
 csv_filepaths_ditto = sorted(glob.glob("conf paper results/ditto/nb_attributes/*.csv"), key=lambda f: int(re.search(r'_(\d+)attr_', f).group(1)))
 csv_filepaths_orion = sorted(glob.glob("conf paper results/orion_ld/nb_attributes/*.csv"), key=lambda f: int(re.search(r'_(\d+)attr_', f).group(1)))
 csv_filepaths_scorpio = sorted(glob.glob("conf paper results/scorpio/nb_attributes/*.csv"), key=lambda f: int(re.search(r'_(\d+)attr_', f).group(1)))
-
-def extraire_colonnes_csv(filepath):
-    with open(filepath, newline='', encoding='utf-8') as f:
-        lecteur = csv.reader(f)
-        entetes = next(lecteur)
-        colonnes = [[] for _ in entetes]
-        for ligne in lecteur:
-            for i, valeur in enumerate(ligne):
-                colonnes[i].append(valeur)
-    return dict(zip(entetes, colonnes))
-
-def get_distribution_list_from_percentiles(dictionnary_columns, percentiles_list):
-    distribution_list = []
-    delays_column = dictionnary_columns["delay (s)"]
-    delays_column_float = []
-    for x in delays_column:
-        try:
-            delays_column_float.append(float(x))
-        except:
-            pass
-    sorted_column = sorted(delays_column_float)
-    length = len(sorted_column)
-    for percentile in percentiles_list:
-        i = round(percentile * length)
-        if i < length:
-            distribution_list.append(round(sorted_column[i] * 1000))
-        else:
-            distribution_list.append(round(sorted_column[-1] * 1000))
-    return distribution_list
 
 dictionnarys = {}
 distribution_dict = {}

@@ -6,7 +6,7 @@ MQTT_BROKER = "mosquitto"
 MQTT_PORT = 1883
 MQTT_TOPIC = "sensor/data"
 CONNECTION_ID = "mosquitto_connection"
-PROJECT_FOLDER = "/home/pc-lrt-oaibox/PycharmProjects/benchmarkDT"
+PROJECT_FOLDER = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 scorpio_config_data = {
     "CBROKER_ADDRESS" : "http://localhost:9090/",

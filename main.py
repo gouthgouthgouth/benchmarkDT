@@ -2,11 +2,12 @@ import atexit
 import os
 import signal
 import subprocess
+import time
 from datetime import datetime, timedelta, timezone
 from multiprocessing import Process, Queue
 from benchmark.simulator import send_messages_uniformlaw, send_messages_poissonlaw, \
     send_messages_gaussianlaw, send_messages_mmpp
-from brokers.eclipse_ditto.eclipse_utils import *
+from brokers.eclipse_ditto.eclipse_utils import eclipse_create_things, transform_jsonld_to_ditto, print_time
 from benchmark.utils import get_road_segments_from_json
 from brokers.scorpio.scorpio_utils import scorpio_create_road_segments_and_sensors
 from brokers.orion_ld.orion_ld_utils import orion_create_road_segments_and_sensors
@@ -199,11 +200,11 @@ def make_measurements(dt_solution, nb_entities, create_entities_before_measures=
         file_name += f"_gausslaw_{gauss_nbmessages}nbmessages_center{center_ratio}_sigma{sigma_ratio}"
     if mmpp_enabled:
         file_name += "_mmpp_lambdas_"
-        f = ""
-        for l in lambdas:
-            f += f"{l}-"
-        f = f[:-1]
-        file_name += f
+        lambdas_str = ""
+        for lambdas_val in lambdas:
+            lambdas_str += f"{lambdas_val}-"
+        lambdas_str = lambdas_str[:-1]
+        file_name += lambdas_str
 
     print_time("ℹ️ Writing csvs and doing plots...")
     csv_files = write_csvs(file_datetime, dt_solution=dt_solution, file_name=file_name, lambdas_list=lambdas_list)
@@ -218,44 +219,44 @@ if __name__ == "__main__":
     # dt_solution = "scorpio"
     # dt_solution = "orion_ld"
     # Number of entities
-    # nbe = 50
+    # num_entities = 50
     # Measurement duration
     nb_seconds = 3600*5
     # Frequency
     frequency = 1
     # Number of attributes per entity
-    nba = 5
+    num_attributes = 5
     # Number of bytes per attribute
     bytes_per_attribute = 5
 
     for dt_solution in ["ditto", "orion_ld"]:
-        for nbe in [5]:
-            for l in ([5, 10, 20], [10, 20, 40], [20, 40, 80]):
+        for num_entities in [5]:
+            for lambdas_set in ([5, 10, 20], [10, 20, 40], [20, 40, 80]):
                 try:
                     csv_delay_files = make_measurements(dt_solution,
                                                            create_entities_before_measures=True,
-                                                           nb_entities=nbe,
+                                                           nb_entities=num_entities,
                                                            nb_seconds=nb_seconds,
                                                            mmpp_enabled=True,
-                                                           lambdas=l,
+                                                           lambdas=lambdas_set,
                                                            P=np.array([[0.998, 0.002, 0],
                                                                    [0.001, 0.998, 0.001],
                                                                    [0, 0.002, 0.998]]),
-                                                           nb_attributes=nba,
+                                                           nb_attributes=num_attributes,
                                                            bytes_per_attribute=bytes_per_attribute,
                                                            logs=False)
                 except:
                     try:
                         csv_delay_files = make_measurements(dt_solution,
                                                            create_entities_before_measures=True,
-                                                           nb_entities=nbe,
+                                                           nb_entities=num_entities,
                                                            nb_seconds=nb_seconds,
                                                            mmpp_enabled=True,
-                                                           lambdas=l,
+                                                           lambdas=lambdas_set,
                                                            P=np.array([[0.999, 0.001, 0],
                                                                    [0.0005, 0.999, 0.0005],
                                                                    [0, 0.001, 0.999]]),
-                                                           nb_attributes=nba,
+                                                           nb_attributes=num_attributes,
                                                            bytes_per_attribute=bytes_per_attribute,
                                                            logs=False)
                     except:
