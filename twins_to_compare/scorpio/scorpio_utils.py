@@ -267,28 +267,3 @@ def scorpio_create_road_segments_and_sensors(road_segments, nb_attributes, logs=
     if segments_created and service_created and devices_created == len(road_segments):
         return True
     return False
-
-
-
-def scorpio_subscribe_notifications():
-    subscription = {
-        "type": "Subscription",
-        "entities": [{"type": "RoadSegment"}],
-        "notification": {
-            "endpoint": {
-                "uri": "http://localhost:3000/notify",
-                "accept": "application/ld+json"
-            }
-        }
-    }
-
-    headers = {
-        "Content-Type": "application/ld+json"
-    }
-
-    response = requests.post(
-        "http://localhost:9090/ngsi-ld/v1/subscriptions",
-        headers=headers,
-        data=json.dumps(subscription)
-    )
-    return response.status_code, response.text

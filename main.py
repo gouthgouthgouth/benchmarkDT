@@ -8,11 +8,11 @@ from scripts.sensor_measurements_simulator import send_messages_uniformlaw, send
     send_messages_gaussianlaw, send_messages_mmpp
 from twins_to_compare.eclipse_ditto.eclipse_utils import *
 from scripts.utils import get_road_segments_from_json
-from twins_to_compare.scorpio.scorpio_utils import scorpio_create_road_segments_and_sensors, scorpio_delete_road_segments_and_sensors, scorpio_subscribe_notifications
-from twins_to_compare.orion_ld.orion_ld_utils import orion_create_road_segments_and_sensors, orion_delete_road_segments_and_sensors, orion_subscribe_notifications
+from twins_to_compare.scorpio.scorpio_utils import scorpio_create_road_segments_and_sensors, scorpio_delete_road_segments_and_sensors
+from twins_to_compare.orion_ld.orion_ld_utils import orion_create_road_segments_and_sensors, orion_delete_road_segments_and_sensors
 from twins_to_compare.scripts_for_measures.get_logs import record_logs_mosquitto, \
     record_logs_cpu_ram_delay
-from twins_to_compare.scripts_for_measures.plot import plot_courbe_delay
+from twins_to_compare.scripts_for_measures.plot import plot_courbe_delay, plot_courbe_cpuram
 from twins_to_compare.scripts_for_measures.write_csvs import write_csvs
 import numpy as np
 
@@ -29,20 +29,6 @@ def create_entities(dt_solution, entities, nb_attributes, logs=False):
     elif dt_solution == "orion_ld":
         entities_created = orion_create_road_segments_and_sensors(entities, nb_attributes=nb_attributes, logs=logs)
     return entities_created
-
-def subscribe_notifications(dt_solution, entities):
-    if dt_solution == "ditto":
-        print_time("Subscribing to notifications...")
-        eclipse_subscribe_notifications(entities)
-        print_time("Subscribed.")
-    elif dt_solution == "scorpio":
-        print_time("Subscribing to notifications...")
-        scorpio_subscribe_notifications()
-        print_time("Subscribed.")
-    elif dt_solution == "orion_ld":
-        print_time("Subscribing to notifications...")
-        orion_subscribe_notifications()
-        print_time("Subscribed.")
 
 def delete_entities(dt_solution, entities):
     print_time("Deleting entities...")
@@ -119,7 +105,7 @@ def make_measurements(dt_solution, nb_entities, create_entities_before_measures=
                       poisson_law_enabled=False, poisson_lambda=10,
                       gaussianlaw_enabled=False, gauss_nbmessages=100, center_ratio=0.5, sigma_ratio=0.1,
 
-                      nb_attributes=2, bytes_per_attribute=5, send_notification=False, logs=False):
+                      nb_attributes=2, bytes_per_attribute=5, logs=False):
     stop_dt_solution(logs=False)
     start_dt_solution(dt_solution, logs=logs)
     input_file_json = "data/road_segments_from_csv.json"
@@ -137,9 +123,6 @@ def make_measurements(dt_solution, nb_entities, create_entities_before_measures=
         raise RuntimeError("✖️ Entities not created")
     else:
         print_time("✔️ Entities created")
-
-    if send_notification:
-        subscribe_notifications(dt_solution=dt_solution, entities=entities)
 
     # sending test messages
     print_time("ℹ️ Running tests...")
@@ -235,7 +218,7 @@ def make_measurements(dt_solution, nb_entities, create_entities_before_measures=
     print_time("ℹ️ Writing csvs and doing plots...")
     csv_files = write_csvs(file_datetime, dt_solution=dt_solution, file_name=file_name, lambdas_list=lambdas_list)
     plot_courbe_delay(file_name, beginning=start_time, dt_solution=dt_solution)
-    # plot_courbe_cpuram(file_datetime, file_name, beginning=start_time, dt_solution=dt_solution)
+    plot_courbe_cpuram(file_datetime, file_name, beginning=start_time, dt_solution=dt_solution)
     delete_entities(dt_solution, entities)
     stop_dt_solution(logs=logs)
     return csv_files

@@ -140,6 +140,3 @@ def put_mqtt_connection():
     else:
         print_time(f"✖️ Error configuring MQTT connection: {response.text}")
         return False
-
-def eclipse_subscribe_notifications(entities):
-    return None
