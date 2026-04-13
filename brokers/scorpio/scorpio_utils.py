@@ -1,3 +1,10 @@
+"""
+Scorpio NGSI-LD broker adapter.
+
+Provisions road segment entities and FIWARE IoT Agent services/devices required
+by the benchmark. Unlike the Orion-LD adapter, HTTP requests here are
+fire-and-forget with no built-in retry logic.
+"""
 import json
 import time
 
@@ -7,7 +14,19 @@ from config.config import scorpio_config_data
 from benchmark.utils import print_time
 from brokers.fiware_utils import generate_compact_attributes
 
+
 def add_road_segments(road_segments, fiware_service, fiware_servicepath, logs=False):
+    """POST each road segment entity to the Scorpio NGSI-LD context broker.
+
+    Args:
+        road_segments (list[dict]): NGSI-LD entity dicts to create.
+        fiware_service (str): FIWARE tenant header value.
+        fiware_servicepath (str): FIWARE service path header value.
+        logs (bool): If True, print the outcome of each request.
+
+    Returns:
+        bool: True if every entity was created (HTTP 201); False otherwise.
+    """
     url = scorpio_config_data["CBROKER_ADDRESS"] + "ngsi-ld/v1/entities/"
 
     segments_created = 0
@@ -23,33 +42,30 @@ def add_road_segments(road_segments, fiware_service, fiware_servicepath, logs=Fa
             if response.status_code == 201:
                 segments_created += 1
                 if logs:
-                    print_time(f"✔️ Entité {segment['id']} créée avec succès.")
+                    print_time(f"✔️ Entity {segment['id']} created successfully.")
             else:
                 if logs:
-                    print_time(f"✖️ Échec de la création de {segment['id']}: {response.status_code}, {response.text}")
+                    print_time(f"✖️ Failed to create {segment['id']}: {response.status_code}, {response.text}")
         except Exception as e:
-            print_time(f"✖️ Erreur lors de l'envoi de {segment['id']}: {e}")
+            print_time(f"✖️ Error sending {segment['id']}: {e}")
 
-    if segments_created == len(road_segments):
-        return True
-    else:
-        return False
+    return segments_created == len(road_segments)
+
 
 def create_iot_service(apikey, entity_type, resource, fiware_service, fiware_servicepath, logs=False):
-    """
-    Create an IoT service in the FIWARE IoT Agent.
+    """Register an IoT Agent service group for MQTT-to-NGSI-LD message translation.
 
-    Parameters:
-        apikey (str): The API key for the service.
-        entity_type (str): The default entity type for the service.
-        resource (str): The resource path for devices.
-        fiware_service (str): The FIWARE service (tenant).
-        fiware_servicepath (str): The FIWARE service path.
+    Args:
+        apikey (str): API key that devices will include in their MQTT topics.
+        entity_type (str): Default NGSI-LD entity type for devices in this group.
+        resource (str): IoT Agent resource path (e.g. ``/iot/json``).
+        fiware_service (str): FIWARE tenant header value.
+        fiware_servicepath (str): FIWARE service path header value.
+        logs (bool): If True, print the outcome of the request.
 
     Returns:
-        Response: The response object from the HTTP request.
+        requests.Response | bool: Response object on success; False on failure.
     """
-
     url = scorpio_config_data["IOT_AGENT_ADDRESS"] + "iot/services"
 
     headers = {
@@ -82,23 +98,25 @@ def create_iot_service(apikey, entity_type, resource, fiware_service, fiware_ser
 
 def create_iot_device(id, entity_type, apikey, transport, attributes, static_attributes,
                       fiware_service, fiware_servicepath, logs=False):
-    """
-    Create an IoT device in the FIWARE IoT Agent.
+    """Register a single IoT device in the FIWARE IoT Agent.
 
-    Parameters:
-        id (int): The unique ID for the device.
-        entity_type (str): The entity type for the device.
-        apikey (str): The API key for the device.
-        transport (str): The transport protocol (e.g., HTTP).
-        attributes (list or None): A list of attributes with object_id, name, and type.
-        static_attributes (list or None): A list of static attributes with name, type, and value.
-        fiware_service (str): The FIWARE service (tenant).
-        fiware_servicepath (str): The FIWARE service path.
+    Args:
+        id (int): Numeric suffix appended to ``entity_type`` to form the device ID
+            (e.g. ``entity_type=TrafficFlowSensor``, ``id=3`` → ``TrafficFlowSensor3``).
+        entity_type (str): NGSI-LD entity type for the device.
+        apikey (str): API key associated with the device's service group.
+        transport (str): Transport protocol (``"MQTT"``).
+        attributes (list[dict] | None): Dynamic attribute mappings
+            (``object_id``, ``name``, ``type``).
+        static_attributes (list[dict] | None): Static attribute values
+            (``name``, ``type``, ``value``).
+        fiware_service (str): FIWARE tenant header value.
+        fiware_servicepath (str): FIWARE service path header value.
+        logs (bool): If True, print the outcome of the request.
 
     Returns:
-        Response: The response object from the HTTP request.
+        requests.Response | bool: Response object on success; False on failure.
     """
-
     url = scorpio_config_data["IOT_AGENT_ADDRESS"] + "iot/devices"
 
     headers = {
@@ -136,7 +154,22 @@ def create_iot_device(id, entity_type, apikey, transport, attributes, static_att
             print_time(f"✖️ Failed to create device {entity_type}{str(id)} because of error : {e}")
         return False
 
+
 def scorpio_create_road_segments_and_sensors(road_segments, nb_attributes, logs=False):
+    """Provision the full set of Scorpio entities required for one benchmark run.
+
+    Creates all road segment entities, registers one IoT service group, then
+    provisions one sensor device per road segment, each with ``nb_attributes``
+    dynamic attributes and two static attributes (location and controlledAsset).
+
+    Args:
+        road_segments (list[dict]): NGSI-LD road segment entity dicts.
+        nb_attributes (int): Number of dynamic attributes to provision per sensor.
+        logs (bool): If True, enable verbose logging throughout.
+
+    Returns:
+        bool: True if segments, service, and all devices were created successfully.
+    """
     segments_created = add_road_segments(road_segments,
                       fiware_service=scorpio_config_data["fiware_service"],
                       fiware_servicepath=scorpio_config_data["fiware_servicepath"],
@@ -149,13 +182,17 @@ def scorpio_create_road_segments_and_sensors(road_segments, nb_attributes, logs=
                                   fiware_service=scorpio_config_data["fiware_service"],
                                   fiware_servicepath=scorpio_config_data["fiware_servicepath"],
                                   logs=logs)
+
     sensor_id_counter = 0
     devices_created = 0
     if logs:
         print_time("ℹ️ Creating devices...")
+
     for segment in road_segments:
         sensor_id_counter += 1
         trafficFlowSensor_attributes = generate_compact_attributes(nb_attributes)
+
+        # Static attributes link the sensor back to its parent road segment.
         static_attributes = [
             {
                 "name": "location",
@@ -185,6 +222,4 @@ def scorpio_create_road_segments_and_sensors(road_segments, nb_attributes, logs=
                           logs=logs):
             devices_created += 1
 
-    if segments_created and service_created and devices_created == len(road_segments):
-        return True
-    return False
+    return segments_created and service_created and devices_created == len(road_segments)

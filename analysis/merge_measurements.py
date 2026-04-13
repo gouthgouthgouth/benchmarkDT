@@ -1,32 +1,38 @@
+"""
+Merge multiple delay CSV files from the same experiment configuration into one.
+
+When the same experiment (broker, entity count, attribute count, etc.) was run
+across several time slots, this script concatenates the resulting ``-delays.csv``
+files into a single file whose name encodes the combined total duration. Files
+are grouped by stripping the date/time prefix and the sequential run index from
+each filename, so all files sharing the same suffix are merged together.
+
+Configure ``solution`` to select the broker whose results should be processed.
+"""
 import os
 import csv
 from collections import defaultdict
 
-#solution
-# solution = "ditto"
+# Target broker: one of "ditto", "orion_ld", "scorpio".
 solution = "orion_ld"
-# solution = "scorpio"
 
-# Source folder path + result CSV output path
 input_folder = f'violin_plots_data_4g/{solution}/results'
 output_folder = f'violin_plots_data_4g/{solution}/results_merged'
 
-# Dictionary to group files by their suffix after "ditto"
+# Group input files by their configuration suffix (everything after the date/run prefix).
 groupes = defaultdict(list)
 
-# Lister tous les fichiers dans le dossier
 fichiers = [f for f in os.listdir(input_folder) if f.endswith('delays.csv')]
 
-# Group files by their suffix after "solution"
 for fichier in fichiers:
-    # Extract the part after "solution"
+    # Strip the date prefix and the run-index segment to obtain the configuration key.
     partie_apres_solution = fichier.split(solution)[1]
     split = partie_apres_solution.split("_")
-    split.pop(2)
+    split.pop(2)  # Remove the run-index segment
     chaine = "_".join(split)[1:]
     groupes[chaine].append(fichier)
 
-# Pour chaque groupe de fichiers, fusionner les fichiers CSV
+# For each group of more than one file, merge all rows into a single output CSV.
 for key in groupes:
     if len(groupes[key]) > 1:
         en_tetes = []
@@ -35,27 +41,26 @@ for key in groupes:
         secondes_total = 0
 
         for fichier in groupes[key]:
-            # Extract date+time and seconds from the file name
+            # Accumulate the run date strings and total duration.
             date = fichier.split('_')[0] + '_' + fichier.split('_')[1]
             secondes = int(fichier.split('seconds_')[0].split('_')[-1])
             dates.append(date)
             secondes_total += secondes
 
-            # Read the CSV file
             with open(os.path.join(input_folder, fichier), mode='r') as f:
                 lecteur = csv.reader(f)
-                en_tete = next(lecteur)  # Read the header
+                en_tete = next(lecteur)
                 if not en_tetes:
-                    en_tetes = en_tete
+                    en_tetes = en_tete  # Capture header from first file only
                 lignes.extend(list(lecteur))
 
+        # Name the merged file with all run dates and the summed duration.
         nouveau_suffixe = f"{secondes_total}seconds_{key}"
         nouveau_nom = f"{'_'.join(dates)}_{solution}_{nouveau_suffixe}"
 
-        # Write the new CSV file
         with open(os.path.join(output_folder, nouveau_nom), mode='w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(en_tetes)  # Write the header once
-            writer.writerows(lignes)  # Write all data rows
+            writer.writerow(en_tetes)
+            writer.writerows(lignes)
 
-print("Fusion terminée.")
+print("Merge complete.")

@@ -1,3 +1,12 @@
+"""
+Line plot comparing mean end-to-end delay vs. message frequency across brokers.
+
+Scans the results folders for delay CSV files matching the configured duration
+and entity count, computes the mean delay for each (broker, frequency) pair,
+and plots all three brokers on the same axes.
+
+Configure ``duration``, ``entities``, and ``mqtt_delay`` at the top of the script.
+"""
 import os
 import re
 from copy import deepcopy
@@ -7,31 +16,29 @@ import matplotlib.pyplot as plt
 
 from config.config import PROJECT_FOLDER
 
-# Filtering by fixed parameters
-duration = 300
-entities = 1
-mqtt_delay = 0
+# --- Parameters ---
+duration = 300   # Experiment duration to include (seconds)
+entities = 1     # Number of entities to include
+mqtt_delay = 0   # Informational only; used in the output filename
 
-# Result folders
+# --- File discovery ---
 folders = {
     "orion_ld": f"{PROJECT_FOLDER}/measures/orion_ld/results",
     "scorpio": f"{PROJECT_FOLDER}/measures/scorpio/results",
     "ditto": f"{PROJECT_FOLDER}/measures/ditto/results"
 }
 
-# Regex for -delays.csv files only
+# Match uniform-law delay files and extract experiment parameters from the name.
 pattern = re.compile(
     r"(?P<date>\d{4}-\d{2}-\d{2})_(?P<time>\d{2}-\d{2}-\d{2})_(?P<broker>\w+?)_(?P<entities>\d+)entities_"
     r"(?P<duration>\d+)seconds_(?P<law>[^_]+)_frequency(?P<freq>\d+)-delays\.csv"
 )
 
-# Output folder setup
 output_dir = f"{PROJECT_FOLDER}/measures/analysis/comparison results/plots"
 os.makedirs(output_dir, exist_ok=True)
 
-# Metadata extraction from file names
+# --- Metadata extraction ---
 results = {}
-
 for broker, folder in folders.items():
     for filename in os.listdir(folder):
         match = pattern.match(filename)
@@ -40,7 +47,7 @@ for broker, folder in folders.items():
             metadata["filepath"] = os.path.join(folder, filename)
             results[filename] = metadata
 
-# Collecting averages per solution and per frequency
+# --- Aggregate mean delay per (broker, frequency) ---
 frequencies = set()
 delay_per_solution_freq = {}
 
@@ -59,22 +66,15 @@ for meta in results.values():
             except Exception as e:
                 print(f"Erreur avec {filepath} : {e}")
 
-# Sort frequencies
 frequencies = sorted(frequencies)
 
-# Plot
+# --- Plot ---
 plt.figure(figsize=(8, 5))
 
 for broker, delays_by_freq in delay_per_solution_freq.items():
     y = [delays_by_freq.get(freq, float('nan')) for freq in frequencies]
 
     measured_freq = deepcopy(frequencies)
-    # deleted = 0
-    # for i in range(len(y)):
-    #     if y[i] == float('nan'):
-    #         y.pop(i - deleted)
-    #         measured_freq.pop(i - deleted)
-    #         deleted += 1
     linestyle = "-"
     if broker == "orion_ld":
         linestyle = "-"

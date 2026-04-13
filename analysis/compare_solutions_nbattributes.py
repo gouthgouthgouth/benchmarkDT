@@ -1,3 +1,12 @@
+"""
+Line plot comparing mean end-to-end delay vs. number of attributes per entity.
+
+Scans the results folders for delay CSV files that include a ``bpa`` (bytes per
+attribute) field in the file name, computes the mean delay for each
+(broker, attribute count) pair, and plots all three brokers on the same axes.
+
+Configure ``duration``, ``freq``, and ``mqtt_delay`` at the top of the script.
+"""
 import os
 import re
 from copy import deepcopy
@@ -7,31 +16,29 @@ import matplotlib.pyplot as plt
 
 from config.config import PROJECT_FOLDER
 
-# Filtering by fixed parameters
-duration = 300
-freq = 5
-mqtt_delay = 0
+# --- Parameters ---
+duration = 300   # Experiment duration to include (seconds)
+freq = 5         # Frequency filter (currently unused in the file selection logic below)
+mqtt_delay = 0   # Informational only; used in the output filename
 
-# Result folders
+# --- File discovery ---
 folders = {
     "orion_ld": f"{PROJECT_FOLDER}/measures/orion_ld/results",
     "scorpio": f"{PROJECT_FOLDER}/measures/scorpio/results",
     "ditto": f"{PROJECT_FOLDER}/measures/ditto/results"
 }
 
-# Regex for -delays.csv files only
+# Match delay files that include attribute and bpa counts in the name.
 pattern = re.compile(
     r"(?P<date>\d{4}-\d{2}-\d{2})_(?P<time>\d{2}-\d{2}-\d{2})_(?P<broker>\w+?)_(?P<entities>\d+)entities_"
     r"(?P<duration>\d+)seconds_(?P<attr>\d+)attr_(?P<bpa>\d+)bpa_(?P<law>[^_]+)_frequency(?P<freq>\d+)-delays\.csv"
 )
 
-# Output folder setup
 output_dir = f"{PROJECT_FOLDER}/measures/analysis/comparison results/plots"
 os.makedirs(output_dir, exist_ok=True)
 
-# Metadata extraction from file names
+# --- Metadata extraction ---
 results = {}
-
 for broker, folder in folders.items():
     for filename in os.listdir(folder):
         match = pattern.match(filename)
@@ -40,13 +47,12 @@ for broker, folder in folders.items():
             metadata["filepath"] = os.path.join(folder, filename)
             results[filename] = metadata
 
-# Collecting averages per solution and per number of attributes
+# --- Aggregate mean delay per (broker, attribute count) ---
+# All files that matched the pattern (bpa field present) are included.
 attr_set = set()
 delay_per_solution_attr = {}
 
 for meta in results.values():
-    # if meta["duration"] == str(duration) and meta["freq"] == str(freq):
-    # if meta["duration"] == str(duration) and meta["freq"] == meta["entities"] and int(meta["entities"])%5 == 0:
     if meta["bpa"]:
         attr = int(meta["attr"])
         broker = meta["broker"]
@@ -57,21 +63,17 @@ for meta in results.values():
             try:
                 df = pd.read_csv(filepath)
                 delay = pd.to_numeric(df["delay (s)"], errors='coerce').dropna().mean()
-                # delay = df["delay (s)"].dropna().mean()
                 delay_per_solution_attr.setdefault(broker, {})[attr] = delay
             except Exception as e:
                 print(f"Erreur avec {filepath} : {e}")
 
-# Sort attributes
 attr_list = sorted(attr_set)
 
-# Plot
+# --- Plot ---
 plt.figure(figsize=(8, 5))
 
 for broker, delays_by_attr in delay_per_solution_attr.items():
     y = [delays_by_attr.get(ent, float('nan')) for ent in attr_list]
-    # y = y[:10]
-    # entities_list = entities_list[:10]
 
     linestyle = "-"
     if broker == "orion_ld":
@@ -87,8 +89,6 @@ plt.ylabel("Délai moyen (s)")
 plt.title(f"Comparaison des délais moyens")
 plt.legend()
 plt.grid(True)
-
-# Optional: fixed Y axis
 plt.ylim(0.0025, 0.05)
 
 file_name = f"lineplot_duration{duration}_freq{freq}_addeddelay{mqtt_delay}.png"

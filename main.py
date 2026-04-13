@@ -1,3 +1,14 @@
+"""
+Main entry point for the benchmarkDT benchmark.
+
+Orchestrates a full measurement run: starts the chosen Digital Twin broker via
+Docker Compose, provisions entities, sends test traffic, records logs, computes
+delays, generates plots, then tears down the broker.
+
+The ``make_measurements`` function can be called with any combination of
+statistical arrival laws (uniform, Poisson, Gaussian, MMPP). The ``__main__``
+block at the bottom defines the concrete experiment parameters.
+"""
 import atexit
 import os
 import signal
@@ -19,7 +30,23 @@ import numpy as np
 
 tz = timezone(timedelta(hours=2))
 
+
 def create_entities(dt_solution, entities, nb_attributes, logs=False):
+    """Provision the required entities in the running broker.
+
+    Dispatches to the appropriate broker adapter based on ``dt_solution``.
+    For Scorpio an extra 60-second wait is inserted to allow the IoT Agent
+    to finish initialising.
+
+    Args:
+        dt_solution (str): One of ``"ditto"``, ``"scorpio"``, or ``"orion_ld"``.
+        entities (list[dict]): Entity/Thing descriptors to create.
+        nb_attributes (int): Number of sensor attributes to provision per entity.
+        logs (bool): If True, enable verbose logging in the broker adapter.
+
+    Returns:
+        bool: True if all entities were created successfully.
+    """
     entities_created = False
     print_time("ℹ️ Creating entities...")
     if dt_solution == "ditto":
@@ -33,6 +60,14 @@ def create_entities(dt_solution, entities, nb_attributes, logs=False):
 
 
 def cleanup(pid_list, mosquitto_process):
+    """Terminate all background logging processes.
+
+    Registered with ``atexit`` so it runs even if the benchmark is interrupted.
+
+    Args:
+        pid_list (tuple[int, int]): PIDs of the broker and CPU/RAM log scripts.
+        mosquitto_process (multiprocessing.Process): The MQTT logger process.
+    """
     print_time(f"ℹ️ Cleaning up processes {pid_list}, and mosquitto...")
     for pid in pid_list:
         try:
@@ -44,7 +79,13 @@ def cleanup(pid_list, mosquitto_process):
         mosquitto_process.join()
     print_time("✔️ Cleanup done.")
 
+
 def stop_dt_solution(logs=False):
+    """Stop all Docker containers using the infrastructure teardown script.
+
+    Args:
+        logs (bool): If True, print container output to stdout.
+    """
     print_time("ℹ️ Stopping containers...")
     script_path = "infrastructure/cleardocker.sh"
     if logs:
@@ -58,7 +99,17 @@ def stop_dt_solution(logs=False):
         )
     print_time("✔️ Containers stopped.")
 
+
 def start_dt_solution(dt_solution, logs=False):
+    """Start the broker's Docker Compose stack and wait until it is healthy.
+
+    Reads stdout from the startup script line by line and stops waiting as soon
+    as the "All containers are running." sentinel is detected.
+
+    Args:
+        dt_solution (str): One of ``"ditto"``, ``"scorpio"``, or ``"orion_ld"``.
+        logs (bool): If True, show stderr output from the startup script.
+    """
     if dt_solution == "ditto":
         script_path = "brokers/eclipse_ditto/run_ditto.sh"
     elif dt_solution == "scorpio":
@@ -88,6 +139,7 @@ def start_dt_solution(dt_solution, logs=False):
             print_time("✔️ " + line, end="")
     time.sleep(10)
 
+
 def make_measurements(dt_solution, nb_entities, create_entities_before_measures=False, nb_seconds=60,
 
                       # Parameters for sending messages with various laws
@@ -97,14 +149,53 @@ def make_measurements(dt_solution, nb_entities, create_entities_before_measures=
                       gaussianlaw_enabled=False, gauss_nbmessages=100, center_ratio=0.5, sigma_ratio=0.1,
 
                       nb_attributes=2, bytes_per_attribute=5, logs=False):
+    """Run a complete benchmark measurement cycle for a single configuration.
+
+    Lifecycle:
+    1. Stop any running containers, start the target broker.
+    2. Optionally provision entities.
+    3. Send a short warm-up burst via the uniform law.
+    4. Start background log recorders (MQTT + CPU/RAM).
+    5. Launch the requested arrival-law processes in parallel.
+    6. Wait for all senders to finish, then write CSVs and generate plots.
+    7. Stop the broker.
+
+    At least one of the ``*_enabled`` flags must be True for any traffic to be
+    sent during the measurement window.
+
+    Args:
+        dt_solution (str): Broker to benchmark (``"ditto"``, ``"scorpio"``, or ``"orion_ld"``).
+        nb_entities (int): Number of entities to create or target.
+        create_entities_before_measures (bool): If True, provision entities at the start.
+        nb_seconds (int): Duration of the measurement window in seconds.
+        uniform_law_enabled (bool): Enable uniform-rate sender.
+        unif_frequency (float): Send rate in Hz for the uniform law.
+        mmpp_enabled (bool): Enable MMPP sender.
+        lambdas (list[float]): Arrival rates for each MMPP Markov state.
+        P (np.ndarray): MMPP transition matrix.
+        poisson_law_enabled (bool): Enable Poisson sender.
+        poisson_lambda (float): Mean arrival rate for the Poisson law.
+        gaussianlaw_enabled (bool): Enable Gaussian sender.
+        gauss_nbmessages (int): Number of messages to schedule for the Gaussian law.
+        center_ratio (float): Gaussian centre as a fraction of ``nb_seconds``.
+        sigma_ratio (float): Gaussian sigma as a fraction of ``nb_seconds``.
+        nb_attributes (int): Number of attributes per entity payload.
+        bytes_per_attribute (int): Byte size of each attribute value.
+        logs (bool): If True, enable verbose logging throughout.
+
+    Returns:
+        str | None: Path to the ``-delays.csv`` result file.
+    """
     stop_dt_solution(logs=False)
     start_dt_solution(dt_solution, logs=logs)
+
     input_file_json = "data/road_segments_from_csv.json"
     entities = []
     if dt_solution == "ditto":
         entities = transform_jsonld_to_ditto(input_file_json, number_required=nb_entities)
     elif dt_solution == "scorpio" or dt_solution == "orion_ld":
         entities = get_road_segments_from_json(input_file_json, number_required=nb_entities)
+
     if create_entities_before_measures:
         entities_created = create_entities(dt_solution=dt_solution, entities=entities, nb_attributes=nb_attributes, logs=logs)
     else:
@@ -115,11 +206,12 @@ def make_measurements(dt_solution, nb_entities, create_entities_before_measures=
     else:
         print_time("✔️ Entities created")
 
-    # sending test messages
+    # Send a short warm-up burst so the broker is fully active before measurements start.
     print_time("ℹ️ Running tests...")
     send_messages_uniformlaw(entities, dt_solution, msg_frequency_hz=6, nb_seconds=round(len(entities)/5) + 10, start_time=datetime.now(tz=tz) + timedelta(seconds=1), nb_attributes=nb_attributes, bytes_per_attribute=bytes_per_attribute)
     time.sleep(5)
-    # Starting to record logs for context broker and mosquitto
+
+    # Start background log recorders; their PIDs are saved for cleanup.
     file_datetime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     print_time("ℹ️ File datetime : " + file_datetime)
     pid_list = record_logs_cpu_ram_delay(file_datetime, dt_solution=dt_solution)
@@ -127,6 +219,7 @@ def make_measurements(dt_solution, nb_entities, create_entities_before_measures=
     mosquitto_process.start()
     atexit.register(cleanup, pid_list, mosquitto_process)
 
+    # Schedule the measurement window to start 5 seconds from now.
     start_time = datetime.now(tz=tz) + timedelta(seconds=5)
     print_time(f"ℹ️ Starting the measurements")
     processes = []
@@ -190,8 +283,8 @@ def make_measurements(dt_solution, nb_entities, create_entities_before_measures=
 
     time.sleep(10)
 
+    # Build a descriptive file stem that encodes all experiment parameters.
     file_name = f"{file_datetime}_{dt_solution}_{nb_entities}entities_{nb_seconds}seconds_{nb_attributes}attr_{bytes_per_attribute}bpa"
-
     if uniform_law_enabled:
         file_name += f"_uniformlaw_frequency{unif_frequency}"
     if poisson_law_enabled:
@@ -215,20 +308,13 @@ def make_measurements(dt_solution, nb_entities, create_entities_before_measures=
 
 
 if __name__ == "__main__":
-    # dt_solution = "ditto"
-    # dt_solution = "scorpio"
-    # dt_solution = "orion_ld"
-    # Number of entities
-    # num_entities = 50
-    # Measurement duration
-    nb_seconds = 3600*5
-    # Frequency
+    # Experiment parameters
+    nb_seconds = 3600 * 5
     frequency = 1
-    # Number of attributes per entity
     num_attributes = 5
-    # Number of bytes per attribute
     bytes_per_attribute = 5
 
+    # Sweep over brokers, entity counts, and MMPP lambda sets.
     for dt_solution in ["ditto", "orion_ld"]:
         for num_entities in [5]:
             for lambdas_set in ([5, 10, 20], [10, 20, 40], [20, 40, 80]):
@@ -246,6 +332,7 @@ if __name__ == "__main__":
                                                            bytes_per_attribute=bytes_per_attribute,
                                                            logs=False)
                 except:
+                    # Retry with a tighter transition matrix if the first attempt fails.
                     try:
                         csv_delay_files = make_measurements(dt_solution,
                                                            create_entities_before_measures=True,
@@ -261,6 +348,3 @@ if __name__ == "__main__":
                                                            logs=False)
                     except:
                         pass
-
-    # cd /etc/systemd/system
-    # cat docker_limit.slice
