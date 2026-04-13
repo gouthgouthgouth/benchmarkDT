@@ -56,10 +56,6 @@ def get_distribution_list_from_percentiles(dictionnary_columns, percentiles_list
             distribution_list.append(round(sorted_column[-1] * 1000))
     return distribution_list
 
-def get_sorted_list_of_delays(dictionnary_columns):
-    sorted_column = sorted([float(x) for x in dictionnary_columns["delay (s)"]])
-    return sorted_column
-
 dictionnarys = {}
 distribution_dict = {}
 sorted_columns_dict = {}

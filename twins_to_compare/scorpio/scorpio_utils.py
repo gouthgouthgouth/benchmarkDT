@@ -5,7 +5,7 @@ import requests
 import string
 from itertools import product, islice
 
-from configs.config import scorpio_config_data, RAM_LIMIT, CPU_LIMIT
+from configs.config import scorpio_config_data
 from scripts.utils import print_time
 
 def generate_compact_attributes(n):
@@ -151,77 +151,6 @@ def create_iot_device(id, entity_type, apikey, transport, attributes, static_att
             print_time(f"✖️ Failed to create device {entity_type}{str(id)} because of error : {e}")
         return False
 
-
-def get_entity(entity_id, entity_type, fiware_service=None, fiware_servicepath=None, key_values_only=False):
-    """
-    Get an entity from the FIWARE Context Broker.
-
-    Parameters:
-        entity_id (str): The ID of the entity to retrieve.
-        fiware_service (str, optional): The FIWARE service (tenant).
-
-    Returns:
-        Response: The response object from the HTTP request.
-    """
-    url = scorpio_config_data["CBROKER_ADDRESS"] + f"ngsi-ld/v1/entities/urn:ngsi-ld:{entity_type}:{entity_id}"
-    headers = {
-        "NGSILD-Path": "/",
-        'Accept': 'application/ld+json'
-    }
-    params = {}
-    payload = {
-        "attrs=truckTrafficFlow"
-    }
-
-    if key_values_only:
-        params["options"] = "keyValues"
-
-    if fiware_service is not None and fiware_servicepath is not None:
-        headers["NGSILD-Tenant"] = fiware_service
-        headers["fiware-service"] = fiware_service
-        headers["fiware-servicepath"] = fiware_servicepath
-
-    try:
-        response = requests.get(url, params=params, headers=headers, data=payload)
-        response.raise_for_status()
-        print("Entity retrieved successfully.")
-        return response
-    except requests.exceptions.RequestException as e:
-        print(f"Failed to retrieve entity: {e}")
-        return None
-
-def create_traffic_flow_measurement(device_id, car_traffic_flow, truck_traffic_flow):
-    """
-    Send a measurement update to the IoT Agent.
-
-    Parameters:
-        device_id (str): The ID of the device sending the measurement (e.g., TrafficFlowSensor1).
-        car_traffic_flow (int): Value for car traffic flow (e.g., 50).
-        truck_traffic_flow (int): Value for truck traffic flow (e.g., 30).
-
-    Returns:
-        Response: The response object from the HTTP request.
-    """
-    url = scorpio_config_data["IOT_AGENT_HTTP_ADDRESS"] + "iot/json"
-    headers = {
-        "Content-Type": "text/plain",
-        "fiware-service": scorpio_config_data["fiware_service"],
-        "fiware-servicepath": scorpio_config_data["fiware_servicepath"]
-    }
-    params = {
-        "k": scorpio_config_data["apikey"],
-        "i": str(device_id)
-    }
-    payload = f"c|{car_traffic_flow}|t|{truck_traffic_flow}"
-
-    try:
-        response = requests.post(url, headers=headers, params=params, data=payload)
-        response.raise_for_status()
-        print("Measurement sent successfully.")
-        return response
-    except requests.exceptions.RequestException as e:
-        print(f"Failed to send measurement: {e}")
-        return None
 
 def scorpio_delete_road_segments_and_sensors(road_segments):
     url = scorpio_config_data["CBROKER_ADDRESS"] + "ngsi-ld/v1/entities/"

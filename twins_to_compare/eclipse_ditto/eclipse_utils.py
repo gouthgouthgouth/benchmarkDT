@@ -23,9 +23,6 @@ def eclipse_create_things(ditto_things, logs=False):
     else:
         return False
 
-def eclipse_delete_things(entities):
-    pass
-
 def transform_jsonld_to_ditto(input_file, number_required=None):
     with open(input_file, "r", encoding="utf-8") as f:
         jsonld_data = json.load(f)
@@ -75,19 +72,6 @@ def put_thing(thing, policy_id=None, logs=False):
         if logs:
             print_time(f"✖️ Error when creating thing {thing['thingId']} : {response.text}.")
         return False
-
-def get_thing(thing_id):
-    url = f"{eclipse_config_data['DITTO_BASE_URL']}/api/2/things/{thing_id}"
-    HEADERS = {
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-    }
-    params = {"thingId" : f"{thing_id}"}
-    response = requests.get(url, headers=HEADERS, params=params, auth=HTTPBasicAuth('devops', 'foobar'))
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print_time(f"Error: {response.text}")
 
 def put_policy(policy_id, logs=False, tentative=5):
     url = f"{eclipse_config_data['DITTO_BASE_URL']}/api/2/policies/{policy_id}"

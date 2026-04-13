@@ -290,13 +290,6 @@ def write_csvs_orion(file_datetime, file_name):
             writer.writerow([mosquitto_messages[(thing_id, occurence)], message_id, delay])
     return result_file
 
-def log_not_captured_in_csv(csv_file):
-    with open(csv_file, 'r', encoding='utf-8') as f:
-        for line in f:
-            if "Error, msg not received or log wasn't captured" in line:
-                return True
-    return False
-
 def write_csv_lambdas(file_datetime, dt_solution, file_name, lambdas_list):
     result_file = "twins_to_compare/scripts_for_measures/" + dt_solution + "/results/" + file_name + "-lambdas_list.csv"
     with open(result_file, "w") as f:

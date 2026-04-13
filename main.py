@@ -46,11 +46,7 @@ def subscribe_notifications(dt_solution, entities):
 
 def delete_entities(dt_solution, entities):
     print_time("Deleting entities...")
-    if dt_solution == "ditto":
-        print_time("Deleting things...")
-        eclipse_delete_things(entities)
-        print_time("Things deleted.")
-    elif dt_solution == "scorpio":
+    if dt_solution == "scorpio":
         scorpio_delete_road_segments_and_sensors(entities)
         print_time("Entities deleted.")
     elif dt_solution == "orion_ld":
