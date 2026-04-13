@@ -256,43 +256,8 @@ if __name__ == "__main__":
     # Number of bytes per attribute
     bytes_per_attribute = 5
 
-    # for dt_solution in ["scorpio"]:
-    #     for nbe in [50]:
-    #         for l in ([5, 10, 20]):
-    #             try:
-    #                 csv_delay_files = make_measurements(dt_solution,
-    #                                                        create_entities_before_measures=True,
-    #                                                        nb_entities=nbe,
-    #                                                        nb_seconds=nb_seconds,
-    #                                                        mmpp_enabled=True,
-    #                                                        lambdas=l,
-    #                                                        P=np.array([[0.998, 0.002, 0],
-    #                                                                [0.001, 0.998, 0.001],
-    #                                                                [0, 0.002, 0.998]]),
-    #                                                        nb_attributes=nba,
-    #                                                        bytes_per_attribute=bytes_per_attribute,
-    #                                                        logs=False)
-    #             except:
-    #                 try:
-    #                     csv_delay_files = make_measurements(dt_solution,
-    #                                                        create_entities_before_measures=True,
-    #                                                        nb_entities=nbe,
-    #                                                        nb_seconds=nb_seconds,
-    #                                                        mmpp_enabled=True,
-    #                                                        lambdas=l,
-    #                                                        P=np.array([[0.999, 0.001, 0],
-    #                                                                [0.0005, 0.999, 0.0005],
-    #                                                                [0, 0.001, 0.999]]),
-    #                                                        nb_attributes=nba,
-    #                                                        bytes_per_attribute=bytes_per_attribute,
-    #                                                        logs=False)
-    #                 except:
-    #                     pass
-
-    nb_seconds = 3600*5
-
     for dt_solution in ["ditto", "orion_ld"]:
-        for nbe in [50]:
+        for nbe in [5]:
             for l in ([5, 10, 20], [10, 20, 40], [20, 40, 80]):
                 try:
                     csv_delay_files = make_measurements(dt_solution,
