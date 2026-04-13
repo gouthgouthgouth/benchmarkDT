@@ -4,8 +4,8 @@ from copy import deepcopy
 
 import requests
 from requests.auth import HTTPBasicAuth
-from configs.config import eclipse_config_data
-from scripts.utils import print_time
+from config.config import eclipse_config_data
+from benchmark.utils import print_time
 
 def eclipse_create_things(ditto_things, logs=False):
     policy_Id = "my.namespace:RoadSegment"

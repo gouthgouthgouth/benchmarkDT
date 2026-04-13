@@ -4,16 +4,16 @@ import signal
 import subprocess
 from datetime import datetime, timedelta, timezone
 from multiprocessing import Process, Queue
-from scripts.sensor_measurements_simulator import send_messages_uniformlaw, send_messages_poissonlaw, \
+from benchmark.simulator import send_messages_uniformlaw, send_messages_poissonlaw, \
     send_messages_gaussianlaw, send_messages_mmpp
-from twins_to_compare.eclipse_ditto.eclipse_utils import *
-from scripts.utils import get_road_segments_from_json
-from twins_to_compare.scorpio.scorpio_utils import scorpio_create_road_segments_and_sensors, scorpio_delete_road_segments_and_sensors
-from twins_to_compare.orion_ld.orion_ld_utils import orion_create_road_segments_and_sensors, orion_delete_road_segments_and_sensors
-from twins_to_compare.scripts_for_measures.get_logs import record_logs_mosquitto, \
+from brokers.eclipse_ditto.eclipse_utils import *
+from benchmark.utils import get_road_segments_from_json
+from brokers.scorpio.scorpio_utils import scorpio_create_road_segments_and_sensors
+from brokers.orion_ld.orion_ld_utils import orion_create_road_segments_and_sensors
+from benchmark.get_logs import record_logs_mosquitto, \
     record_logs_cpu_ram_delay
-from twins_to_compare.scripts_for_measures.plot import plot_courbe_delay, plot_courbe_cpuram
-from twins_to_compare.scripts_for_measures.write_csvs import write_csvs
+from benchmark.plot import plot_courbe_delay, plot_courbe_cpuram
+from benchmark.write_csvs import write_csvs
 import numpy as np
 
 tz = timezone(timedelta(hours=2))
@@ -30,16 +30,6 @@ def create_entities(dt_solution, entities, nb_attributes, logs=False):
         entities_created = orion_create_road_segments_and_sensors(entities, nb_attributes=nb_attributes, logs=logs)
     return entities_created
 
-def delete_entities(dt_solution, entities):
-    print_time("Deleting entities...")
-    if dt_solution == "scorpio":
-        scorpio_delete_road_segments_and_sensors(entities)
-        print_time("Entities deleted.")
-    elif dt_solution == "orion_ld":
-        print_time("Deleting entities...")
-        orion_delete_road_segments_and_sensors(entities)
-        print_time("Entities deleted.")
-
 
 def cleanup(pid_list, mosquitto_process):
     print_time(f"ℹ️ Cleaning up processes {pid_list}, and mosquitto...")
@@ -55,7 +45,7 @@ def cleanup(pid_list, mosquitto_process):
 
 def stop_dt_solution(logs=False):
     print_time("ℹ️ Stopping containers...")
-    script_path = "scripts/cleardocker.sh"
+    script_path = "infrastructure/cleardocker.sh"
     if logs:
         subprocess.run(["bash", script_path], check=True)
     else:
@@ -69,11 +59,11 @@ def stop_dt_solution(logs=False):
 
 def start_dt_solution(dt_solution, logs=False):
     if dt_solution == "ditto":
-        script_path = "twins_to_compare/eclipse_ditto/run_ditto.sh"
+        script_path = "brokers/eclipse_ditto/run_ditto.sh"
     elif dt_solution == "scorpio":
-        script_path = "twins_to_compare/scorpio/run_scorpio.sh"
+        script_path = "brokers/scorpio/run_scorpio.sh"
     elif dt_solution == "orion_ld":
-        script_path = "twins_to_compare/orion_ld/run_orion_ld.sh"
+        script_path = "brokers/orion_ld/run_orion_ld.sh"
     print_time("ℹ️ starting " + dt_solution + "...")
     if logs:
         proc = subprocess.Popen(
@@ -219,7 +209,6 @@ def make_measurements(dt_solution, nb_entities, create_entities_before_measures=
     csv_files = write_csvs(file_datetime, dt_solution=dt_solution, file_name=file_name, lambdas_list=lambdas_list)
     plot_courbe_delay(file_name, beginning=start_time, dt_solution=dt_solution)
     plot_courbe_cpuram(file_datetime, file_name, beginning=start_time, dt_solution=dt_solution)
-    delete_entities(dt_solution, entities)
     stop_dt_solution(logs=logs)
     return csv_files
 

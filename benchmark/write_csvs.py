@@ -21,14 +21,14 @@ def write_csvs(file_datetime, dt_solution, file_name, lambdas_list):
 def write_csvs_ditto(file_datetime, file_name):
     dt = datetime.strptime(file_datetime, "%Y-%m-%d_%H-%M-%S")
 
-    cpu_ram_logfile = "twins_to_compare/scripts_for_measures/ditto/measures/" + file_datetime + "-cpu_ram"
-    mosquitto_logfile = "twins_to_compare/scripts_for_measures/ditto/measures/" + file_datetime + "-mosquitto"
-    things_logfile = "twins_to_compare/scripts_for_measures/ditto/measures/" + file_datetime + "-things"
-    output_csv_things = f"twins_to_compare/scripts_for_measures/ditto/measures_csv/{file_name}-things.csv"
-    output_csv_mosquitto = f"twins_to_compare/scripts_for_measures/ditto/measures_csv/{file_name}-mosquitto.csv"
-    result_file = "twins_to_compare/scripts_for_measures/ditto/results/" + file_name + "-delays.csv"
+    cpu_ram_logfile = "measures/ditto/measures/" + file_datetime + "-cpu_ram"
+    mosquitto_logfile = "measures/ditto/measures/" + file_datetime + "-mosquitto"
+    things_logfile = "measures/ditto/measures/" + file_datetime + "-things"
+    output_csv_things = f"measures/ditto/measures_csv/{file_name}-things.csv"
+    output_csv_mosquitto = f"measures/ditto/measures_csv/{file_name}-mosquitto.csv"
+    result_file = "measures/ditto/results/" + file_name + "-delays.csv"
 
-    os.makedirs("twins_to_compare/scripts_for_measures/ditto/measures_csv", exist_ok=True)
+    os.makedirs("measures/ditto/measures_csv", exist_ok=True)
 
     occurence = {}
 
@@ -112,14 +112,14 @@ def write_csvs_ditto(file_datetime, file_name):
 def write_csvs_scorpio(file_datetime, file_name):
     dt = datetime.strptime(file_datetime, "%Y-%m-%d_%H-%M-%S")
 
-    cpu_ram_logfile = "twins_to_compare/scripts_for_measures/scorpio/measures/" + file_datetime + "-cpu_ram"
-    mosquitto_logfile = "twins_to_compare/scripts_for_measures/scorpio/measures/" + file_datetime + "-mosquitto"
-    things_logfile = "twins_to_compare/scripts_for_measures/scorpio/measures/" + file_datetime + "-entities"
-    output_csv_things = f"twins_to_compare/scripts_for_measures/scorpio/measures_csv/{file_name}-entities.csv"
-    output_csv_mosquitto = f"twins_to_compare/scripts_for_measures/scorpio/measures_csv/{file_name}-mosquitto.csv"
-    result_file = "twins_to_compare/scripts_for_measures/scorpio/results/" + file_name + "-delays.csv"
+    cpu_ram_logfile = "measures/scorpio/measures/" + file_datetime + "-cpu_ram"
+    mosquitto_logfile = "measures/scorpio/measures/" + file_datetime + "-mosquitto"
+    things_logfile = "measures/scorpio/measures/" + file_datetime + "-entities"
+    output_csv_things = f"measures/scorpio/measures_csv/{file_name}-entities.csv"
+    output_csv_mosquitto = f"measures/scorpio/measures_csv/{file_name}-mosquitto.csv"
+    result_file = "measures/scorpio/results/" + file_name + "-delays.csv"
 
-    os.makedirs("twins_to_compare/scripts_for_measures/scorpio/measures_csv", exist_ok=True)
+    os.makedirs("measures/scorpio/measures_csv", exist_ok=True)
 
     occurence = {}
 
@@ -204,14 +204,14 @@ def write_csvs_scorpio(file_datetime, file_name):
 def write_csvs_orion(file_datetime, file_name):
     dt = datetime.strptime(file_datetime, "%Y-%m-%d_%H-%M-%S")
 
-    cpu_ram_logfile = "twins_to_compare/scripts_for_measures/orion_ld/measures/" + file_datetime + "-cpu_ram"
-    mosquitto_logfile = "twins_to_compare/scripts_for_measures/orion_ld/measures/" + file_datetime + "-mosquitto"
-    things_logfile = "twins_to_compare/scripts_for_measures/orion_ld/measures/" + file_datetime + "-entities"
-    output_csv_things = f"twins_to_compare/scripts_for_measures/orion_ld/measures_csv/{file_name}-entities.csv"
-    output_csv_mosquitto = f"twins_to_compare/scripts_for_measures/orion_ld/measures_csv/{file_name}-mosquitto.csv"
-    result_file = "twins_to_compare/scripts_for_measures/orion_ld/results/" + file_name + "-delays.csv"
+    cpu_ram_logfile = "measures/orion_ld/measures/" + file_datetime + "-cpu_ram"
+    mosquitto_logfile = "measures/orion_ld/measures/" + file_datetime + "-mosquitto"
+    things_logfile = "measures/orion_ld/measures/" + file_datetime + "-entities"
+    output_csv_things = f"measures/orion_ld/measures_csv/{file_name}-entities.csv"
+    output_csv_mosquitto = f"measures/orion_ld/measures_csv/{file_name}-mosquitto.csv"
+    result_file = "measures/orion_ld/results/" + file_name + "-delays.csv"
 
-    os.makedirs("twins_to_compare/scripts_for_measures/orion_ld/measures_csv", exist_ok=True)
+    os.makedirs("measures/orion_ld/measures_csv", exist_ok=True)
 
     occurence = {}
 
@@ -291,7 +291,7 @@ def write_csvs_orion(file_datetime, file_name):
     return result_file
 
 def write_csv_lambdas(file_datetime, dt_solution, file_name, lambdas_list):
-    result_file = "twins_to_compare/scripts_for_measures/" + dt_solution + "/results/" + file_name + "-lambdas_list.csv"
+    result_file = "measures/" + dt_solution + "/results/" + file_name + "-lambdas_list.csv"
     with open(result_file, "w") as f:
         writer = csv.writer(f)
         writer.writerow(["change_timestamp", "lambda"])

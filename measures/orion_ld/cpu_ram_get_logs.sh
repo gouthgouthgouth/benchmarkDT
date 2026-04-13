@@ -1,17 +1,16 @@
 #!/bin/bash
 
 CONTAINERS=(
-  scorpio-iot-agent-1
-  scorpio-scorpio-1
-  scorpio-postgres-1
-  db-mongo
+  orion_ld-iot-agent-1
+  orion_ld-orion-ld-1
+  orion_ld-mongo-orion-1
+  orion_ld-mongo-iot-1
 )
 
 PROJECT_ROOT="$(pwd)"
-OUTPUT_FILE="$PROJECT_ROOT/twins_to_compare/scripts_for_measures/scorpio/measures/"$1-cpu_ram_sum"
+OUTPUT_FILE="$PROJECT_ROOT/measures/orion_ld/measures/"$1-cpu_ram_sum
 
-
-#echo "Starting CPU/RAM monitoring for selected containers..."
+# Initialize CSV
 echo "Timestamp, CPU%, MemUsageMiB, MemTotalMiB" > "$OUTPUT_FILE"
 
 trap "echo 'Terminal closed, stopping monitoring.'; exit 0" SIGHUP SIGINT SIGTERM
@@ -45,4 +44,5 @@ done <<< "$STATS_LIST"
 
   TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S.%3N")
   echo "$TIMESTAMP, $CPUP_SUM, $MEMUSAGE_SUM, $MEMTOTAL_SUM" >> "$OUTPUT_FILE"
+  sleep 1
 done

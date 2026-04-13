@@ -1,16 +1,22 @@
 #!/bin/bash
 
 CONTAINERS=(
-  orion_ld-iot-agent-1
-  orion_ld-orion-ld-1
-  orion_ld-mongo-orion-1
-  orion_ld-mongo-iot-1
+  docker-connectivity-1
+  docker-gateway-1
+  docker-policies-1
+  docker-things-search-1
+  docker-ditto-ui-1
+  docker-mongodb-1
+  docker-things-1
+  docker-nginx-1
+  docker-swagger-ui-1
 )
 
 PROJECT_ROOT="$(pwd)"
-OUTPUT_FILE="$PROJECT_ROOT/twins_to_compare/scripts_for_measures/orion_ld/measures/"$1-cpu_ram_sum
+OUTPUT_FILE="$PROJECT_ROOT/measures/ditto/measures/$1-cpu_ram_sum"
 
-# Initialize CSV
+
+#echo "Starting CPU/RAM monitoring for selected containers..."
 echo "Timestamp, CPU%, MemUsageMiB, MemTotalMiB" > "$OUTPUT_FILE"
 
 trap "echo 'Terminal closed, stopping monitoring.'; exit 0" SIGHUP SIGINT SIGTERM
@@ -44,5 +50,4 @@ done <<< "$STATS_LIST"
 
   TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S.%3N")
   echo "$TIMESTAMP, $CPUP_SUM, $MEMUSAGE_SUM, $MEMTOTAL_SUM" >> "$OUTPUT_FILE"
-  sleep 1
 done

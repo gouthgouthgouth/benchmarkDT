@@ -1,7 +1,7 @@
 #!/bin/bash
 
-CONTAINER_NAME="orion_ld-iot-agent-1"
-OUTPUT_FILE=./twins_to_compare/scripts_for_measures/orion_ld/measures/"$1-entities"
+CONTAINER_NAME="docker-things-1"
+OUTPUT_FILE=./measures/ditto/measures/"$1-things"
 
 if [ -z "$CONTAINER_NAME" ] || [ -z "$OUTPUT_FILE" ]; then
   echo "Usage: $0 <container_name> <output_file>"

@@ -9,8 +9,8 @@ import requests
 import paho.mqtt.client as mqtt
 import json
 
-from configs.config import scorpio_config_data, MQTT_PORT, orion_config_data
-from scripts.utils import print_time
+from config.config import scorpio_config_data, MQTT_PORT, orion_config_data
+from benchmark.utils import print_time
 
 tz = timezone(timedelta(hours=2))
 

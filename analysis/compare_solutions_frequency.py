@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from configs.config import PROJECT_FOLDER
+from config.config import PROJECT_FOLDER
 
 # Filtering by fixed parameters
 duration = 300
@@ -14,9 +14,9 @@ mqtt_delay = 0
 
 # Result folders
 folders = {
-    "orion_ld": f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/orion_ld/results",
-    "scorpio": f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/scorpio/results",
-    "ditto": f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/ditto/results"
+    "orion_ld": f"{PROJECT_FOLDER}/measures/orion_ld/results",
+    "scorpio": f"{PROJECT_FOLDER}/measures/scorpio/results",
+    "ditto": f"{PROJECT_FOLDER}/measures/ditto/results"
 }
 
 # Regex for -delays.csv files only
@@ -26,7 +26,7 @@ pattern = re.compile(
 )
 
 # Output folder setup
-output_dir = f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/comparison results/plots"
+output_dir = f"{PROJECT_FOLDER}/measures/analysis/comparison results/plots"
 os.makedirs(output_dir, exist_ok=True)
 
 # Metadata extraction from file names

@@ -1,11 +1,11 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from configs.config import PROJECT_FOLDER
+from config.config import PROJECT_FOLDER
 
 
 def plot_courbe_delay(file_datetime, beginning, dt_solution):
-    result_file = f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/{dt_solution}/results/" + file_datetime + "-delays.csv"
+    result_file = f"{PROJECT_FOLDER}/measures/{dt_solution}/results/" + file_datetime + "-delays.csv"
     plt.close(fig='all')
     # Load the CSV
     df = pd.read_csv(result_file)
@@ -27,12 +27,12 @@ def plot_courbe_delay(file_datetime, beginning, dt_solution):
     plt.grid(True)
     plt.legend()
     plt.gcf().autofmt_xdate()
-    plt.savefig(f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_datetime}-delays-plot.png")
+    plt.savefig(f"{PROJECT_FOLDER}/measures/{dt_solution}/results/{file_datetime}-delays-plot.png")
     print(f"Plot saved as {dt_solution}/results/{file_datetime}-delays-plot.png")
     plt.close()
 
 def plot_courbe_cpuram(file_datetime, file_name, beginning, dt_solution):
-    result_file = f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/{dt_solution}/measures/{file_datetime}-cpu_ram_sum"
+    result_file = f"{PROJECT_FOLDER}/measures/{dt_solution}/measures/{file_datetime}-cpu_ram_sum"
 
     # Load the CSV
     df = pd.read_csv(result_file)
@@ -51,7 +51,7 @@ def plot_courbe_cpuram(file_datetime, file_name, beginning, dt_solution):
     plt.title("CPU usage over time")
     plt.grid(True)
     plt.legend()
-    plt.savefig(f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_name}-cpu-plot.png")
+    plt.savefig(f"{PROJECT_FOLDER}/measures/{dt_solution}/results/{file_name}-cpu-plot.png")
     print(f"CPU plot saved as {dt_solution}/{file_name}-cpu-plot.png")
 
     # Plot RAM
@@ -62,6 +62,6 @@ def plot_courbe_cpuram(file_datetime, file_name, beginning, dt_solution):
     plt.title("RAM usage over time")
     plt.grid(True)
     plt.legend()
-    plt.savefig(f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_name}-ram-plot.png")
+    plt.savefig(f"{PROJECT_FOLDER}/measures/{dt_solution}/results/{file_name}-ram-plot.png")
     print(f"RAM plot saved as {dt_solution}/{file_name}-ram-plot.png")
     plt.close()

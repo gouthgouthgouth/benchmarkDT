@@ -5,11 +5,11 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 import os
 
-from configs.config import PROJECT_FOLDER
+from config.config import PROJECT_FOLDER
 
 
 def record_logs_mosquitto(date, dt_solution):
-    output_folder = f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/{dt_solution}/measures/"
+    output_folder = f"{PROJECT_FOLDER}/measures/{dt_solution}/measures/"
     BROKER = "localhost"
     PORT = 1883
     os.makedirs("measures_raw", exist_ok=True)
@@ -36,7 +36,7 @@ def record_logs_cpu_ram_delay(date, dt_solution):
         print("Erreur dt_solution mal renseigné")
         return None, None
 
-    base_path = f"./twins_to_compare/scripts_for_measures/{dt_solution}"
+    base_path = f"./measures/{dt_solution}"
     process1 = subprocess.Popen(["bash", f"{base_path}/{dt_solution}_get_logs.sh", date])
     print(f"Script {dt_solution}_get_logs.sh running in background with PID {process1.pid}")
     process2 = subprocess.Popen(["bash", f"{base_path}/cpu_ram_get_logs.sh", date])
