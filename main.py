@@ -2,7 +2,6 @@ import atexit
 import os
 import signal
 import subprocess
-import time
 from datetime import datetime, timedelta, timezone
 from multiprocessing import Process, Queue
 from scripts.sensor_measurements_simulator import send_messages_uniformlaw, send_messages_poissonlaw, \
@@ -14,9 +13,8 @@ from twins_to_compare.orion_ld.orion_ld_utils import orion_create_road_segments_
 from twins_to_compare.stellio.stellio_utils import stellio_create_road_segments_and_sensors, stellio_delete_road_segments_and_sensors, stellio_subscribe_notifications
 from twins_to_compare.scripts_for_measures.get_logs import record_logs_mosquitto, \
     record_logs_cpu_ram_delay
-from twins_to_compare.scripts_for_measures.plot import plot_courbe_delay, plot_courbe_cpuram
-from twins_to_compare.scripts_for_measures.write_csvs import write_csvs, write_csvs_scorpio, write_csvs_ditto, \
-    log_not_captured_in_csv
+from twins_to_compare.scripts_for_measures.plot import plot_courbe_delay
+from twins_to_compare.scripts_for_measures.write_csvs import write_csvs
 import numpy as np
 
 tz = timezone(timedelta(hours=2))
@@ -126,7 +124,7 @@ def start_dt_solution(dt_solution, logs=False):
             break
         elif "is now healthy" in line:
             print_time("✔️ " + line, end="")
-    time.sleep(300)
+    time.sleep(10)
 
 def make_measurements(dt_solution, nb_entities, create_entities_before_measures=False, nb_seconds=60,
 
