@@ -10,7 +10,6 @@ from twins_to_compare.eclipse_ditto.eclipse_utils import *
 from scripts.utils import get_road_segments_from_json
 from twins_to_compare.scorpio.scorpio_utils import scorpio_create_road_segments_and_sensors, scorpio_delete_road_segments_and_sensors, scorpio_subscribe_notifications
 from twins_to_compare.orion_ld.orion_ld_utils import orion_create_road_segments_and_sensors, orion_delete_road_segments_and_sensors, orion_subscribe_notifications
-from twins_to_compare.stellio.stellio_utils import stellio_create_road_segments_and_sensors, stellio_delete_road_segments_and_sensors, stellio_subscribe_notifications
 from twins_to_compare.scripts_for_measures.get_logs import record_logs_mosquitto, \
     record_logs_cpu_ram_delay
 from twins_to_compare.scripts_for_measures.plot import plot_courbe_delay
@@ -29,8 +28,6 @@ def create_entities(dt_solution, entities, nb_attributes, logs=False):
         entities_created = scorpio_create_road_segments_and_sensors(entities, nb_attributes=nb_attributes, logs=logs)
     elif dt_solution == "orion_ld":
         entities_created = orion_create_road_segments_and_sensors(entities, nb_attributes=nb_attributes, logs=logs)
-    elif dt_solution == "stellio":
-        stellio_create_road_segments_and_sensors(entities)
     return entities_created
 
 def subscribe_notifications(dt_solution, entities):
@@ -46,10 +43,6 @@ def subscribe_notifications(dt_solution, entities):
         print_time("Subscribing to notifications...")
         orion_subscribe_notifications()
         print_time("Subscribed.")
-    elif dt_solution == "stellio":
-        print_time("Subscribing to notifications...")
-        stellio_subscribe_notifications()
-        print_time("Subscribed.")
 
 def delete_entities(dt_solution, entities):
     print_time("Deleting entities...")
@@ -63,10 +56,6 @@ def delete_entities(dt_solution, entities):
     elif dt_solution == "orion_ld":
         print_time("Deleting entities...")
         orion_delete_road_segments_and_sensors(entities)
-        print_time("Entities deleted.")
-    elif dt_solution == "stellio":
-        print_time("Deleting entities...")
-        stellio_delete_road_segments_and_sensors(entities)
         print_time("Entities deleted.")
 
 
@@ -141,7 +130,7 @@ def make_measurements(dt_solution, nb_entities, create_entities_before_measures=
     entities = []
     if dt_solution == "ditto":
         entities = transform_jsonld_to_ditto(input_file_json, number_required=nb_entities)
-    elif dt_solution == "scorpio" or dt_solution == "orion_ld" or dt_solution == "stellio":
+    elif dt_solution == "scorpio" or dt_solution == "orion_ld":
         entities = get_road_segments_from_json(input_file_json, number_required=nb_entities)
     if create_entities_before_measures:
         entities_created = create_entities(dt_solution=dt_solution, entities=entities, nb_attributes=nb_attributes, logs=logs)
@@ -260,8 +249,6 @@ if __name__ == "__main__":
     # dt_solution = "ditto"
     # dt_solution = "scorpio"
     # dt_solution = "orion_ld"
-    # dt_solution = "stellio"
-
     # Nombre d'entités
     # nbe = 50
     # Durée des mesures

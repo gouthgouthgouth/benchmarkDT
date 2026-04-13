@@ -32,7 +32,7 @@ def record_logs_mosquitto(date, dt_solution):
     client.loop_forever()
 
 def record_logs_cpu_ram_delay(date, dt_solution):
-    if dt_solution not in ["ditto", "scorpio", "orion_ld", "stellio"]:
+    if dt_solution not in ["ditto", "scorpio", "orion_ld"]:
         print("Erreur dt_solution mal renseigné")
         return None, None
 

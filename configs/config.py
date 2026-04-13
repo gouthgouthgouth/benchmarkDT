@@ -32,22 +32,6 @@ orion_config_data = {
     "sensor_entity_type" : "TrafficFlowSensor",
 }
 
-stellio_config_data = {
-    "CBROKER_ADDRESS" : "http://localhost:8080/",
-    "IOT_AGENT_ADDRESS" : "http://localhost:4041/",
-    "IOT_AGENT_HTTP_ADDRESS" : "http://localhost:7896/",
-    "fiware_service" : "tenant-1",
-    "fiware_servicepath" : "/",
-    "apikey" : "apikey123",
-    "default_resource" : "/iot/json",
-    "transport" : "MQTT",
-    "sensor_entity_type" : "TrafficFlowSensor",
-    "trafficFlowSensor_attributes" : [
-        {"object_id": "c", "name": "carTrafficFlow", "type": "Property"},
-        {"object_id": "t", "name": "truckTrafficFlow", "type": "Property"}
-    ],
-}
-
 eclipse_config_data = {
     "DITTO_BASE_URL" : "http://localhost:8080",
     "NAMESPACE" : "my.namespace",
