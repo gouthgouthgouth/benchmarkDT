@@ -8,12 +8,12 @@ import pandas as pd
 # Parameters
 duration = "18000"
 lambdas = "10-20-40"
-# Laisser à None pour calcul automatique
+# Leave as None for automatic calculation
 bin_size = 3
 x_min = None
 x_max = None
 
-### Début du script
+### Script start
 csv_filepaths_ditto = sorted(glob.glob("violin_plots_data_4g/ditto/results/*.csv"))
 csv_filepaths_orion = sorted(glob.glob("violin_plots_data_4g/orion_ld/results/*.csv"))
 csv_filepaths_scorpio = sorted(glob.glob("violin_plots_data_4g/scorpio/results/*.csv"))
@@ -76,30 +76,30 @@ for f in files_to_plot:
     dfs[f] = df
     print(df["delai"].describe())
 
-# Calculer la taille des bins pour que ce soit cohérent entre les histogrammes
+# Calculate bin size to ensure consistency across histograms
 all_delays = []
 for f in files_to_plot:
     all_delays.extend(dfs[f]["delai"].dropna().tolist())
 
-if bin_size is not None and all_delays:  # Vérifier si la liste n'est pas vide
+if bin_size is not None and all_delays:  # Check that the list is not empty
     min_delay = min(all_delays)
     max_delay = max(all_delays)
     bins = np.arange(min_delay, max_delay + bin_size, bin_size)
 else:
     bins = None
 
-# --- Création des histogrammes ---
+# --- Histogram creation ---
 n = len(dfs)
 fig, axes = plt.subplots(1, n, figsize=(6 * n, 6), sharey=True)
 if n == 1:
     axes = [axes]
 colors = {
-    "orion_ld": "blue",  # Bleu
-    "ditto": "red",     # Rouge
-    "scorpio": "green"    # Vert
+    "orion_ld": "blue",  # Blue
+    "ditto": "red",     # Red
+    "scorpio": "green"    # Green
 }
 for ax, f in zip(axes, dfs):
-    # Définition des paramètres en fonction des entrées utilisateur
+    # Define parameters based on user inputs
     if "orion" in f:
         title = "Fiware orion_ld"
         source_name = "orion_ld"
@@ -123,7 +123,7 @@ for ax, f in zip(axes, dfs):
         hue="source",
         legend=False,
         kde=False,
-        bins=bins,  # Utiliser les bins calculés
+        bins=bins,  # Use the calculated bins
         palette=[colors[source_name]],
         ax=ax
     )

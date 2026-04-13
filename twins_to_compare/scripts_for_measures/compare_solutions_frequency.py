@@ -7,29 +7,29 @@ import matplotlib.pyplot as plt
 
 from configs.config import PROJECT_FOLDER
 
-# Filtrage selon paramètres fixes
+# Filtering by fixed parameters
 duration = 300
 entities = 1
 mqtt_delay = 0
 
-# Dossiers des résultats
+# Result folders
 folders = {
     "orion_ld": f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/orion_ld/results",
     "scorpio": f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/scorpio/results",
     "ditto": f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/ditto/results"
 }
 
-# Expression régulière pour les fichiers -delays.csv uniquement
+# Regex for -delays.csv files only
 pattern = re.compile(
     r"(?P<date>\d{4}-\d{2}-\d{2})_(?P<time>\d{2}-\d{2}-\d{2})_(?P<broker>\w+?)_(?P<entities>\d+)entities_"
     r"(?P<duration>\d+)seconds_(?P<law>[^_]+)_frequency(?P<freq>\d+)-delays\.csv"
 )
 
-# Préparation dossier de sortie
+# Output folder setup
 output_dir = f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/comparison results/plots"
 os.makedirs(output_dir, exist_ok=True)
 
-# Extraction des métadonnées depuis les noms de fichiers
+# Metadata extraction from file names
 results = {}
 
 for broker, folder in folders.items():
@@ -40,7 +40,7 @@ for broker, folder in folders.items():
             metadata["filepath"] = os.path.join(folder, filename)
             results[filename] = metadata
 
-# Collecte des moyennes par solution et par fréquence
+# Collecting averages per solution and per frequency
 frequencies = set()
 delay_per_solution_freq = {}
 
@@ -59,10 +59,10 @@ for meta in results.values():
             except Exception as e:
                 print(f"Erreur avec {filepath} : {e}")
 
-# Tri des fréquences
+# Sort frequencies
 frequencies = sorted(frequencies)
 
-# Tracé
+# Plot
 plt.figure(figsize=(8, 5))
 
 for broker, delays_by_freq in delay_per_solution_freq.items():

@@ -73,7 +73,7 @@ def write_csvs_ditto(file_datetime, file_name):
         dt_str = dt_part.replace('_', ' ')
         return datetime.strptime(f"{dt_str}.{ms_part}", "%Y-%m-%d %H-%M-%S.%f")
 
-    # Charger Mosquitto (envoi)
+    # Load Mosquitto logs (send)
     mosquitto_messages = {}
     with open(output_csv_mosquitto, newline='') as f:
         reader = csv.reader(f)
@@ -82,7 +82,7 @@ def write_csvs_ditto(file_datetime, file_name):
             sent_time, thing_id, occurence = row[0], row[1], int(row[2])
             mosquitto_messages[(thing_id, occurence)] = parse_time(sent_time)
 
-    # Charger Things (envoi)
+    # Load Things logs (received)
     things_messages = {}
     with open(output_csv_things, newline='') as f:
         reader = csv.reader(f)
@@ -166,7 +166,7 @@ def write_csvs_scorpio(file_datetime, file_name):
         dt_str = dt_part.replace('_', ' ')
         return datetime.strptime(f"{dt_str}.{ms_part}", "%Y-%m-%d %H-%M-%S.%f")
 
-    # Charger Mosquitto (envoi)
+    # Load Mosquitto logs (send)
     mosquitto_messages = {}
     with open(output_csv_mosquitto, newline='') as f:
         reader = csv.reader(f)
@@ -175,7 +175,7 @@ def write_csvs_scorpio(file_datetime, file_name):
             sent_time, thing_id, occurence = row[0], row[1], int(row[2])
             mosquitto_messages[(thing_id, occurence)] = parse_time(sent_time)
 
-    # Charger Things (envoi)
+    # Load Things logs (received)
     things_messages = {}
     with open(output_csv_things, newline='') as f:
         reader = csv.reader(f)
@@ -255,7 +255,7 @@ def write_csvs_orion(file_datetime, file_name):
         dt_str = dt_part.replace('_', ' ')
         return datetime.strptime(f"{dt_str}.{ms_part}", "%Y-%m-%d %H-%M-%S.%f")
 
-    # Charger Mosquitto (envoi)
+    # Load Mosquitto logs (send)
     mosquitto_messages = {}
     with open(output_csv_mosquitto, newline='') as f:
         reader = csv.reader(f)
@@ -264,7 +264,7 @@ def write_csvs_orion(file_datetime, file_name):
             sent_time, thing_id, occurence = row[0], row[1], int(row[2])
             mosquitto_messages[(thing_id, occurence)] = parse_time(sent_time)
 
-    # Charger Things (envoi)
+    # Load Things logs (received)
     things_messages = {}
     with open(output_csv_things, newline='') as f:
         reader = csv.reader(f)

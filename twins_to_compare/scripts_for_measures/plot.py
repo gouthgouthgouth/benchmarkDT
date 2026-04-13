@@ -7,10 +7,10 @@ from configs.config import PROJECT_FOLDER
 def plot_courbe_delay(file_datetime, beginning, dt_solution):
     result_file = f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/{dt_solution}/results/" + file_datetime + "-delays.csv"
     plt.close(fig='all')
-    # Charger le CSV
+    # Load the CSV
     df = pd.read_csv(result_file)
 
-    # Si la colonne s'appelle "delay" et qu'il y a un message_id que vous ne voulez pas afficher
+    # If the column is named "delay" and there is a message_id you do not want to display
     delays = df["delay (s)"].dropna()
     df["sent_timestamp"] = pd.to_datetime(df["sent_timestamp"], format='%Y-%m-%d %H:%M:%S.%f', errors='coerce', utc=True)
     df["sent_timestamp"] = df["sent_timestamp"] - pd.Timedelta(hours=2)
@@ -18,7 +18,7 @@ def plot_courbe_delay(file_datetime, beginning, dt_solution):
 
     df = df.dropna(subset=["delay (s)", "sent_timestamp"])
 
-    # Tracer
+    # Plot
     plt.figure(figsize=(12, 6))
     plt.plot(df["sent_timestamp_seconds"], df["delay (s)"], marker='.', linestyle='-', label="Delays (s)")
     plt.xlabel("Message sent time")
@@ -34,16 +34,16 @@ def plot_courbe_delay(file_datetime, beginning, dt_solution):
 def plot_courbe_cpuram(file_datetime, file_name, beginning, dt_solution):
     result_file = f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/{dt_solution}/measures/{file_datetime}-cpu_ram_sum"
 
-    # Charger le CSV
+    # Load the CSV
     df = pd.read_csv(result_file)
 
-    # Convertir Timestamp en datetime et ajuster
+    # Convert Timestamp to datetime and adjust
     df["Timestamp"] = pd.to_datetime(df["Timestamp"], format='%Y-%m-%d %H:%M:%S.%f', errors='coerce', utc=True)
     df["Timestamp"] = df["Timestamp"] - pd.Timedelta(hours=2)
     df["timestamp_seconds"] = (df["Timestamp"] - beginning).dt.total_seconds()
     df = df[df["timestamp_seconds"] > 0]
 
-    # Tracer CPU
+    # Plot CPU
     plt.figure(figsize=(12, 6))
     plt.plot(df["timestamp_seconds"], df[" CPU%"], marker='.', linestyle='-', label="CPU%")
     plt.xlabel("Time (s)")
@@ -54,7 +54,7 @@ def plot_courbe_cpuram(file_datetime, file_name, beginning, dt_solution):
     plt.savefig(f"{PROJECT_FOLDER}/twins_to_compare/scripts_for_measures/{dt_solution}/results/{file_name}-cpu-plot.png")
     print(f"CPU plot saved as {dt_solution}/{file_name}-cpu-plot.png")
 
-    # Tracer RAM
+    # Plot RAM
     plt.figure(figsize=(12, 6))
     plt.plot(df["timestamp_seconds"], df[" MemUsageMiB"], marker='.', linestyle='-', label="Memory usage (MiB)")
     plt.xlabel("Time (s)")

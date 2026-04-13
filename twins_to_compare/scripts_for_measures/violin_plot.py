@@ -81,7 +81,7 @@ for f in files_to_plot:
     print(df["delai"].dtype)
     print(df["delai"].describe())
 
-# --- Création des violins ---
+# --- Violin plot creation ---
 n = len(dfs)
 fig, axes = plt.subplots(1, n, figsize=(6 * n, 6), sharey=True)
 
@@ -89,9 +89,9 @@ if n == 1:
     axes = [axes]
 
 colors = {
-    "orion_ld": "#0000ff",  # Bleu
+    "orion_ld": "#0000ff",  # Blue
     "ditto": "#ff0000",     # Orange
-    "scorpio": "#00ff00"    # Vert
+    "scorpio": "#00ff00"    # Green
 }
 
 for ax, f in zip(axes, dfs):

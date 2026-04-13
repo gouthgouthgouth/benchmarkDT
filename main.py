@@ -245,9 +245,9 @@ if __name__ == "__main__":
     # dt_solution = "ditto"
     # dt_solution = "scorpio"
     # dt_solution = "orion_ld"
-    # Nombre d'entités
+    # Number of entities
     # nbe = 50
-    # Durée des mesures
+    # Measurement duration
     nb_seconds = 3600*5
     # Frequency
     frequency = 1

@@ -16,7 +16,7 @@ def notify():
     payload = request.get_json()
     notified_at = payload.get("notification", {}).get("notifiedAt")
 
-    #TODO à compléter ici
+    #TODO to complete here
     entity_id = "entity_id"
     a = "a"
 

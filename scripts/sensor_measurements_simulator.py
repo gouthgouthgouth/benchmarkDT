@@ -88,7 +88,7 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
             client.publish(MQTT_TOPIC, data)
             payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
 
-            # attendre précisément jusqu'au prochain envoi
+            # wait precisely until the next send
             next_time += interval
             sleep_time = next_time - time.perf_counter()
             if sleep_time > 0:
@@ -163,9 +163,9 @@ def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, sta
     center_time = nb_seconds * center_ratio
     sigma = nb_seconds * sigma_ratio
 
-    # Générer les instants d’envoi
+    # Generate send timestamps
     send_times = np.random.normal(loc=center_time, scale=sigma, size=nb_messages)
-    send_times = send_times[(send_times >= 0) & (send_times <= nb_seconds)]  # Garder ceux dans la fenêtre
+    send_times = send_times[(send_times >= 0) & (send_times <= nb_seconds)]  # Keep those within the window
     send_times.sort()
 
     i = 0

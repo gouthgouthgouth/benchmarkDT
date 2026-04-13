@@ -7,19 +7,19 @@ from collections import defaultdict
 solution = "orion_ld"
 # solution = "scorpio"
 
-# Chemin du dossier source + chemin du résultat des fichiers CSV
+# Source folder path + result CSV output path
 input_folder = f'violin_plots_data_4g/{solution}/results'
 output_folder = f'violin_plots_data_4g/{solution}/results_merged'
 
-# Dictionnaire pour regrouper les fichiers par leur suffixe après "ditto"
+# Dictionary to group files by their suffix after "ditto"
 groupes = defaultdict(list)
 
 # Lister tous les fichiers dans le dossier
 fichiers = [f for f in os.listdir(input_folder) if f.endswith('delays.csv')]
 
-# Regrouper les fichiers par leur suffixe après "solution"
+# Group files by their suffix after "solution"
 for fichier in fichiers:
-    # Extraire la partie après "solution"
+    # Extract the part after "solution"
     partie_apres_solution = fichier.split(solution)[1]
     split = partie_apres_solution.split("_")
     split.pop(2)
@@ -35,16 +35,16 @@ for key in groupes:
         secondes_total = 0
 
         for fichier in groupes[key]:
-            # Extraire la date+heure et les secondes du nom de fichier
+            # Extract date+time and seconds from the file name
             date = fichier.split('_')[0] + '_' + fichier.split('_')[1]
             secondes = int(fichier.split('seconds_')[0].split('_')[-1])
             dates.append(date)
             secondes_total += secondes
 
-            # Lire le fichier CSV
+            # Read the CSV file
             with open(os.path.join(input_folder, fichier), mode='r') as f:
                 lecteur = csv.reader(f)
-                en_tete = next(lecteur)  # Lire l'en-tête
+                en_tete = next(lecteur)  # Read the header
                 if not en_tetes:
                     en_tetes = en_tete
                 lignes.extend(list(lecteur))
@@ -52,10 +52,10 @@ for key in groupes:
         nouveau_suffixe = f"{secondes_total}seconds_{key}"
         nouveau_nom = f"{'_'.join(dates)}_{solution}_{nouveau_suffixe}"
 
-        # Écrire le nouveau fichier CSV
+        # Write the new CSV file
         with open(os.path.join(output_folder, nouveau_nom), mode='w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(en_tetes)  # Écrire l'en-tête une seule fois
-            writer.writerows(lignes)  # Écrire toutes les lignes de données
+            writer.writerow(en_tetes)  # Write the header once
+            writer.writerows(lignes)  # Write all data rows
 
 print("Fusion terminée.")
