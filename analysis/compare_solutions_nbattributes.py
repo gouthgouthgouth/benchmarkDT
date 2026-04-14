@@ -28,9 +28,9 @@ mqtt_delay = 0   # Informational only; used in the output filename
 
 # --- File discovery ---
 folders = {
-    "orion_ld": f"{PROJECT_FOLDER}/measures/orion_ld/results",
-    "scorpio": f"{PROJECT_FOLDER}/measures/scorpio/results",
-    "ditto": f"{PROJECT_FOLDER}/measures/ditto/results"
+    "orion_ld": f"../measures/orion_ld/results",
+    "scorpio": f"../measures/scorpio/results",
+    "ditto": f"../measures/ditto/results"
 }
 
 # Match delay files that include attribute and bpa counts in the name.
@@ -39,7 +39,7 @@ pattern = re.compile(
     r"(?P<duration>\d+)seconds_(?P<attr>\d+)attr_(?P<bpa>\d+)bpa_(?P<law>[^_]+)_frequency(?P<freq>\d+)-delays\.csv"
 )
 
-output_dir = f"{PROJECT_FOLDER}/measures/analysis/comparison results/plots"
+output_dir = "plots"
 os.makedirs(output_dir, exist_ok=True)
 
 # --- Metadata extraction ---
