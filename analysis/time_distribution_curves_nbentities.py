@@ -8,6 +8,7 @@ get a fixed colour; entity count variants are distinguished by line style.
 
 Input CSV files are expected under ``conf paper results/<broker>/nb_entities/``.
 """
+import logging
 import pprint
 
 import matplotlib.pyplot as plt
@@ -17,6 +18,10 @@ import glob
 import re
 
 from analysis.common import extraire_colonnes_csv, get_distribution_list_from_percentiles
+from benchmark.utils import configure_logging
+
+configure_logging()
+logger = logging.getLogger(__name__)
 
 # Percentile levels used to print a summary table after plotting.
 p_list = [0.5, 0.9, 0.99, 0.999, 0.9999, 1]
@@ -91,4 +96,4 @@ plt.legend(loc="upper right", fontsize=15)
 plt.tight_layout()
 plt.savefig("comparison results/plot_nbentities.png", dpi=300)
 
-pprint.pprint(distribution_dict)
+logger.debug("Distribution percentile summary:\n%s", pprint.pformat(distribution_dict))

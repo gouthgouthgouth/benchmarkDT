@@ -8,6 +8,7 @@ are distinguished by line style.
 
 Input CSV files are expected under ``conf paper results/<broker>/nb_attributes/``.
 """
+import logging
 import pprint
 
 import matplotlib.pyplot as plt
@@ -17,6 +18,10 @@ import glob
 import re
 
 from analysis.common import extraire_colonnes_csv, get_distribution_list_from_percentiles
+from benchmark.utils import configure_logging
+
+configure_logging()
+logger = logging.getLogger(__name__)
 
 p_list = [0.5, 0.9, 0.99, 0.999, 1]
 
@@ -70,7 +75,7 @@ for label, values in sorted_columns_dict.items():
 
     data = np.array(values)
     ccdf = 1.0 - np.arange(1, len(data) + 1) / len(data)
-    print(label)
+    logger.debug("Plotting CCDF curve: %s", label)
     color = colors.get(label[:5], None)
     plt.semilogy(data, ccdf, label=label, linestyle=next(linestyles), color=color)
 
@@ -83,4 +88,4 @@ plt.legend(loc="upper right", fontsize=15)
 plt.tight_layout()
 plt.savefig("comparison results/plot_nbattributes.png", dpi=300)
 
-pprint.pprint(distribution_dict)
+logger.debug("Distribution percentile summary:\n%s", pprint.pformat(distribution_dict))
