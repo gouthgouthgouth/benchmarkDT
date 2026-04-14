@@ -1,0 +1,17 @@
+# --- Local environment ---
+/.venv/
+
+# --- Python bytecode ---
+__pycache__/
+*.py[cod]
+
+# --- IDE ---
+.idea/
+
+# --- Benchmark runtime output ---
+# Keep the directory structure (.gitkeep), ignore all generated content.
+measures/*/measures/*
+!measures/*/measures/.gitkeep
+measures/*/measures_csv/
+measures/*/results/*
+!measures/*/results/.gitkeep
