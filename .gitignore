@@ -1,5 +1,6 @@
 # --- Local environment ---
 /.venv/
+/.local/
 
 # --- Python bytecode ---
 __pycache__/
@@ -15,3 +16,5 @@ measures/*/measures/*
 measures/*/measures_csv/
 measures/*/results/*
 !measures/*/results/.gitkeep
+measures/*/results_merged/*
+!measures/*/results_merged/.gitkeep

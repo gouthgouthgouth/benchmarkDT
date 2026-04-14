@@ -22,20 +22,19 @@ configure_logging()
 logger = logging.getLogger(__name__)
 
 # --- Parameters ---
-duration = "18000"   # Experiment duration to plot (as it appears in the file name)
+duration = "36000"   # Experiment duration to plot (as it appears in the file name)
 lambdas = "10-20-40" # MMPP lambda set to plot
-bin_size = 3         # Histogram bin width in ms; set to None for automatic sizing
+bin_size = 10        # Histogram bin width in ms; set to None for automatic sizing
 x_min = None         # Left x-axis limit; None = auto
 x_max = None         # Right x-axis limit; None = auto
 
 # --- File discovery ---
-csv_filepaths_ditto = sorted(glob.glob("violin_plots_data_4g/ditto/results/*.csv"))
-csv_filepaths_orion = sorted(glob.glob("violin_plots_data_4g/orion_ld/results/*.csv"))
-csv_filepaths_scorpio = sorted(glob.glob("violin_plots_data_4g/scorpio/results/*.csv"))
+csv_filepaths_ditto = sorted(glob.glob("../measures/ditto/results_merged/*.csv"))
+csv_filepaths_orion = sorted(glob.glob("../measures/orion_ld/results_merged/*.csv"))
 
 # Collect all files, remove the lambda-schedule CSVs (not delay files), then
 # keep only the files matching the configured duration and lambda set.
-all_files = csv_filepaths_scorpio + csv_filepaths_orion + csv_filepaths_ditto
+all_files = csv_filepaths_orion + csv_filepaths_ditto
 toremove = [f for f in all_files if "lambdas_list" in f]
 for f in toremove:
     if f in all_files:
@@ -145,4 +144,4 @@ for ax, f in zip(axes, dfs):
     ax.set_xlim(x_min, x_max)
 
 plt.tight_layout()
-plt.savefig(f"histogram_plots_figs/duration_{duration}s_lambdas{lambdas}")
+plt.savefig(f"plots/duration_{duration}s_lambdas{lambdas}")

@@ -6,7 +6,7 @@ CSV, computes the empirical CCDF, and plots all curves on a single log-log axes.
 Ditto, Orion-LD, and Scorpio each get a fixed colour; lambda set variants are
 distinguished by line style.
 
-Input CSV files are expected under ``violin_plots_data_4g/<broker>/results/``.
+Input CSV files are expected under ``measures/<broker>/results/``.
 Configure ``duration`` and ``entities`` to select the subset to plot.
 """
 import glob
@@ -20,12 +20,12 @@ p_list = [0.5, 0.9, 0.99, 0.999, 0.9999, 1]
 
 linestyles = itertools.cycle(('-', '--', ':'))
 
-csv_filepaths_ditto = sorted(glob.glob("violin_plots_data_4g/ditto/results/*.csv"))
-csv_filepaths_orion = sorted(glob.glob("violin_plots_data_4g/orion_ld/results/*.csv"))
-csv_filepaths_scorpio = sorted(glob.glob("violin_plots_data_4g/scorpio/results/*.csv"))
+csv_filepaths_ditto = sorted(glob.glob("../measures/ditto/results_merged/*.csv"))
+csv_filepaths_orion = sorted(glob.glob("../measures/orion_ld/results_merged/*.csv"))
+csv_filepaths_scorpio = sorted(glob.glob("../measures/scorpio/results_merged/*.csv"))
 
 # --- File filtering ---
-duration = "3600"
+duration = "36000"
 entities = 50
 lambdas_lists = ["5-10-20", "10-20-40", "20-40-80"]
 
@@ -103,4 +103,4 @@ plt.xlim(right=300)
 plt.grid(True, which="both", ls="--", linewidth=0.5)
 plt.legend(loc="upper right", fontsize=15)
 plt.tight_layout()
-plt.savefig(f"violin_plots_figs/ccdf/ccdf_lambdas={lambdas_lists}_duration={duration}s.png", dpi=300)
+plt.savefig(f"plots/ccdf_lambdas={lambdas_lists}_duration={duration}s.png", dpi=300)

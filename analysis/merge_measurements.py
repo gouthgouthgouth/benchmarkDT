@@ -22,8 +22,8 @@ logger = logging.getLogger(__name__)
 # Target broker: one of "ditto", "orion_ld", "scorpio".
 solution = "orion_ld"
 
-input_folder = f'violin_plots_data_4g/{solution}/results'
-output_folder = f'violin_plots_data_4g/{solution}/results_merged'
+input_folder = f'../measures/orion_ld/results'
+output_folder = f'../measures/orion_ld/results_merged'
 
 # Group input files by their configuration suffix (everything after the date/run prefix).
 groupes = defaultdict(list)
