@@ -6,13 +6,15 @@ by the benchmark. All HTTP requests include retry logic (``tentative`` parameter
 to handle transient failures during Orion-LD startup.
 """
 import json
+import logging
 import time
 
 import requests
 
 from config.config import orion_config_data
-from benchmark.utils import print_time
 from brokers.fiware_utils import generate_compact_attributes
+
+logger = logging.getLogger(__name__)
 
 
 def add_road_segments(road_segments, fiware_service, fiware_servicepath, logs=False, tentative=3):
@@ -45,17 +47,17 @@ def add_road_segments(road_segments, fiware_service, fiware_servicepath, logs=Fa
 
             if response.status_code == 201:
                 if logs:
-                    print_time(f"✔️ Entity {segment['id']} created successfully.")
+                    logger.debug("Entity %s created successfully.", segment['id'])
             else:
                 if logs:
-                    print_time(f"✖️ Failed to create {segment['id']}: {response.status_code}, {response.text}")
+                    logger.error("Failed to create entity %s: %s %s", segment['id'], response.status_code, response.text)
                 if tentative > 0:
                     time.sleep(10)
                     return add_road_segments(road_segments, fiware_service, fiware_servicepath, logs=False, tentative=tentative - 1)
                 return False
         except Exception as e:
             if logs:
-                print_time(f"✖️ Error sending {segment['id']}: {e}")
+                logger.error("Error sending entity %s: %s", segment['id'], e)
             if tentative > 0:
                 time.sleep(10)
                 return add_road_segments(road_segments, fiware_service, fiware_servicepath, logs=False,
@@ -101,17 +103,17 @@ def create_iot_service(apikey, entity_type, resource, fiware_service, fiware_ser
 
     try:
         if logs:
-            print_time(f"ℹ️ Creating service {fiware_service}...")
+            logger.info("Creating IoT service %s...", fiware_service)
         response = requests.post(url, headers=headers, data=json.dumps(payload))
         response.raise_for_status()
         if logs:
-            print_time("✔️ Service created successfully.")
+            logger.info("IoT service created successfully.")
         return response
     except requests.exceptions.RequestException as e:
         if logs:
-            print_time(f"✖️ Failed to create service: {e}")
+            logger.error("Failed to create IoT service: %s", e)
         if tentative > 0:
-            print_time(f"ℹ️ Trying again...")
+            logger.info("Retrying...")
             return create_iot_service(apikey, entity_type, resource, fiware_service, fiware_servicepath, logs=False, tentative=tentative - 1)
         return False
 
@@ -165,13 +167,13 @@ def create_iot_device(id, entity_type, apikey, transport, attributes, static_att
         response = requests.post(url, headers=headers, data=json.dumps(payload))
         response.raise_for_status()
         if logs:
-            print_time(f"✔️ Device {entity_type}{str(id)} created successfully.")
+            logger.debug("Device %s%s created successfully.", entity_type, id)
         return response
     except requests.exceptions.RequestException as e:
         if logs:
-            print_time(f"✖️ Failed to create device {entity_type}{str(id)} due to error: {e}")
+            logger.error("Failed to create device %s%s: %s", entity_type, id, e)
         if tentative > 0:
-            print_time(f"ℹ️ Trying again...")
+            logger.info("Retrying...")
             return create_iot_device(id, entity_type, apikey, transport, attributes, static_attributes,
                       fiware_service, fiware_servicepath, logs=False, tentative=tentative - 1)
         return False
@@ -207,7 +209,7 @@ def orion_create_road_segments_and_sensors(road_segments, nb_attributes, logs=Fa
     sensor_id_counter = 0
     devices_created = 0
     if logs:
-        print_time("ℹ️ Creating devices...")
+        logger.info("Creating IoT devices...")
 
     for segment in road_segments:
         sensor_id_counter += 1

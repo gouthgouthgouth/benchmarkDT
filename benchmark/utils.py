@@ -1,24 +1,39 @@
 """
 Shared utility functions used across the benchmark and broker adapter modules.
+
+Also provides the project-wide logging configuration. Call ``configure_logging``
+once at application startup (in ``main.py`` or at the top of a standalone
+analysis script) before any other module emits log messages.
 """
 import json
-import subprocess
-import datetime
-import sys
+import logging
 from copy import deepcopy
 
 
-def print_time(text_to_print, end="\n"):
-    """Print a message prefixed with the current timestamp (millisecond precision).
+_LOG_FORMAT = "%(asctime)s.%(msecs)03d | %(levelname)-8s | %(message)s"
+_LOG_DATEFMT = "%Y-%m-%d %H:%M:%S"
+
+
+def configure_logging(level: int = logging.INFO) -> None:
+    """Configure the root logger with the project's unified format.
+
+    Sets up a single ``StreamHandler`` on the root logger so that every module
+    logger propagates to the same output with a consistent timestamp, level,
+    and message layout.  Safe to call multiple times; ``basicConfig`` is a
+    no-op if the root logger already has handlers.
 
     Args:
-        text_to_print (str): The message to display.
-        end (str): Line terminator passed to print(). Defaults to newline.
+        level (int): Minimum logging level (e.g. ``logging.DEBUG``). Defaults
+            to ``logging.INFO``.
     """
-    print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3] + ": " + text_to_print, end=end)
+    logging.basicConfig(
+        level=level,
+        format=_LOG_FORMAT,
+        datefmt=_LOG_DATEFMT,
+    )
 
 
-def get_road_segments_from_json(input_file, number_required=None):
+def get_road_segments_from_json(input_file: str, number_required: int = None) -> list:
     """Load road segment entities from a JSON file and adjust the list size.
 
     If ``number_required`` is smaller than the number of entities in the file,

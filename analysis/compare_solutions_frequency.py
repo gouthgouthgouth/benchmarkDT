@@ -7,6 +7,7 @@ and plots all three brokers on the same axes.
 
 Configure ``duration``, ``entities``, and ``mqtt_delay`` at the top of the script.
 """
+import logging
 import os
 import re
 from copy import deepcopy
@@ -15,6 +16,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from config.config import PROJECT_FOLDER
+from benchmark.utils import configure_logging
+
+configure_logging()
+logger = logging.getLogger(__name__)
 
 # --- Parameters ---
 duration = 300   # Experiment duration to include (seconds)
@@ -64,7 +69,7 @@ for meta in results.values():
                 delay = df["delay (s)"].dropna().mean()
                 delay_per_solution_freq.setdefault(broker, {})[freq] = delay
             except Exception as e:
-                print(f"Erreur avec {filepath} : {e}")
+                logger.error("Error reading %s: %s", filepath, e)
 
 frequencies = sorted(frequencies)
 
@@ -94,5 +99,5 @@ plt.grid(True)
 
 file_name = f"lineplot_duration{duration}_nbentities{entities}_addeddelay{mqtt_delay}.png"
 plt.savefig(os.path.join(output_dir, file_name))
-print(f"Graphique sauvegardé dans {output_dir}/{file_name}")
+logger.info("Plot saved to %s/%s", output_dir, file_name)
 plt.close()

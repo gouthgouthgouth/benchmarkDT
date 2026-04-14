@@ -6,10 +6,12 @@ events) is parsed to extract per-message timestamps. The two streams are joined
 on a ``(entity_id, occurrence_number)`` key to compute end-to-end delays and
 write a final ``-delays.csv`` result file.
 """
-import re
 import csv
+import logging
 import os
 from datetime import datetime, timedelta
+
+logger = logging.getLogger(__name__)
 
 
 def parse_time(t):
@@ -199,7 +201,7 @@ def write_csvs_scorpio(file_datetime, file_name):
                         occurrence[thing_id] = occurrence.get(thing_id, 0) + 1
                         writer.writerow([timestamp, thing_id, occurrence[thing_id]])
                 except:
-                    print(line)
+                    logger.warning("Could not parse Scorpio log line: %s", line.rstrip())
 
     # --- Parse the Mosquitto log (MQTT send events) ---
     # Relevant lines contain the FIWARE IoT Agent MQTT topic pattern.

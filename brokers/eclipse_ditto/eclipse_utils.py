@@ -6,13 +6,15 @@ connection via the Ditto REST API, as well as a helper to convert NGSI-LD
 road segment entities into the Ditto Thing format.
 """
 import json
+import logging
 import time
 from copy import deepcopy
 
 import requests
 from requests.auth import HTTPBasicAuth
 from config.config import eclipse_config_data
-from benchmark.utils import print_time
+
+logger = logging.getLogger(__name__)
 
 
 def eclipse_create_things(ditto_things, logs=False):
@@ -35,7 +37,7 @@ def eclipse_create_things(ditto_things, logs=False):
         if put_thing(thing, policy_id=policy_id, logs=logs):
             things_created += 1
     if things_created == len(ditto_things):
-        print_time("✔️ Things created successfully!")
+        logger.info("Things created successfully.")
 
     mqtt_connection_established = put_mqtt_connection()
     time.sleep(1)
@@ -110,11 +112,11 @@ def put_thing(thing, policy_id=None, logs=False):
     response = requests.put(url, data=json.dumps(thing), params=params, auth=HTTPBasicAuth('devops', 'foobar'))
     if response.status_code in [200, 201]:
         if logs:
-            print_time(f"✔️ Thing {thing['thingId']} created successfully!")
+            logger.debug("Thing %s created successfully.", thing['thingId'])
         return True
     else:
         if logs:
-            print_time(f"✖️ Error when creating thing {thing['thingId']} : {response.text}.")
+            logger.error("Failed to create thing %s: %s", thing['thingId'], response.text)
         return False
 
 
@@ -158,12 +160,12 @@ def put_policy(policy_id, logs=False, tentative=5):
     data = json.dumps(policy_definition)
     response = requests.put(url, headers=headers, params=params, data=data, auth=HTTPBasicAuth('devops', 'foobar'))
     if response.status_code == 201:
-        print_time(f"✔️ Policy of id {policy_id} created successfully!")
+        logger.info("Policy %s created successfully.", policy_id)
         return True
     else:
-        print_time(f"✖️ Error, policy of id {policy_id} couldn't be created : {response.text}")
+        logger.error("Failed to create policy %s: %s", policy_id, response.text)
         if tentative > 0:
-            print_time(f"ℹ️ Trying again to publish policy in 60 seconds...")
+            logger.warning("Retrying policy creation in 60 seconds...")
             time.sleep(60)
             return put_policy(policy_id, logs=logs, tentative=tentative - 1)
         return False
@@ -202,8 +204,8 @@ def put_mqtt_connection():
     response = requests.put(url, headers=headers, data=json.dumps(mqtt_connection))
 
     if response.status_code in [200, 201, 204]:
-        print_time("✔️ MQTT Connection configured successfully!")
+        logger.info("MQTT connection configured successfully.")
         return True
     else:
-        print_time(f"✖️ Error configuring MQTT connection: {response.text}")
+        logger.error("Failed to configure MQTT connection: %s", response.text)
         return False

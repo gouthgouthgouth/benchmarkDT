@@ -6,13 +6,15 @@ by the benchmark. Unlike the Orion-LD adapter, HTTP requests here are
 fire-and-forget with no built-in retry logic.
 """
 import json
+import logging
 import time
 
 import requests
 
 from config.config import scorpio_config_data
-from benchmark.utils import print_time
 from brokers.fiware_utils import generate_compact_attributes
+
+logger = logging.getLogger(__name__)
 
 
 def add_road_segments(road_segments, fiware_service, fiware_servicepath, logs=False):
@@ -42,12 +44,12 @@ def add_road_segments(road_segments, fiware_service, fiware_servicepath, logs=Fa
             if response.status_code == 201:
                 segments_created += 1
                 if logs:
-                    print_time(f"✔️ Entity {segment['id']} created successfully.")
+                    logger.debug("Entity %s created successfully.", segment['id'])
             else:
                 if logs:
-                    print_time(f"✖️ Failed to create {segment['id']}: {response.status_code}, {response.text}")
+                    logger.error("Failed to create entity %s: %s %s", segment['id'], response.status_code, response.text)
         except Exception as e:
-            print_time(f"✖️ Error sending {segment['id']}: {e}")
+            logger.error("Error sending entity %s: %s", segment['id'], e)
 
     return segments_created == len(road_segments)
 
@@ -85,14 +87,14 @@ def create_iot_service(apikey, entity_type, resource, fiware_service, fiware_ser
     }
 
     try:
-        print_time(f"ℹ️ Creating service {fiware_service}...")
+        logger.info("Creating IoT service %s...", fiware_service)
         response = requests.post(url, headers=headers, data=json.dumps(payload))
         response.raise_for_status()
         if logs:
-            print_time("✔️ Service created successfully.")
+            logger.info("IoT service created successfully.")
         return response
     except requests.exceptions.RequestException as e:
-        print_time(f"✖️ Failed to create service: {e}")
+        logger.error("Failed to create IoT service: %s", e)
         return False
 
 
@@ -143,15 +145,15 @@ def create_iot_device(id, entity_type, apikey, transport, attributes, static_att
 
     try:
         if logs:
-            print_time(f"ℹ️ Creating device {entity_type}{str(id)}...")
+            logger.debug("Creating device %s%s...", entity_type, id)
         response = requests.post(url, headers=headers, data=json.dumps(payload))
         response.raise_for_status()
         if logs:
-            print_time(f"✔️ Device {entity_type}{str(id)} created successfully.")
+            logger.debug("Device %s%s created successfully.", entity_type, id)
         return response
     except requests.exceptions.RequestException as e:
         if logs:
-            print_time(f"✖️ Failed to create device {entity_type}{str(id)} because of error : {e}")
+            logger.error("Failed to create device %s%s: %s", entity_type, id, e)
         return False
 
 
@@ -186,7 +188,7 @@ def scorpio_create_road_segments_and_sensors(road_segments, nb_attributes, logs=
     sensor_id_counter = 0
     devices_created = 0
     if logs:
-        print_time("ℹ️ Creating devices...")
+        logger.info("Creating IoT devices...")
 
     for segment in road_segments:
         sensor_id_counter += 1

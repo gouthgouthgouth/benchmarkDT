@@ -9,9 +9,15 @@ each filename, so all files sharing the same suffix are merged together.
 
 Configure ``solution`` to select the broker whose results should be processed.
 """
+import logging
 import os
 import csv
 from collections import defaultdict
+
+from benchmark.utils import configure_logging
+
+configure_logging()
+logger = logging.getLogger(__name__)
 
 # Target broker: one of "ditto", "orion_ld", "scorpio".
 solution = "orion_ld"
@@ -63,4 +69,4 @@ for key in groupes:
             writer.writerow(en_tetes)
             writer.writerows(lignes)
 
-print("Merge complete.")
+logger.info("Merge complete.")

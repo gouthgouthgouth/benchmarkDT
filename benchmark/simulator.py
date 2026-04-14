@@ -14,6 +14,7 @@ All four functions share the same MQTT topic scheme and payload format, which
 are factored out into the private helpers ``_build_mqtt_topic`` and
 ``_extract_device_ids``.
 """
+import logging
 import random
 import time
 from datetime import datetime, timezone, timedelta
@@ -21,12 +22,12 @@ import string
 from itertools import product, islice
 
 import numpy as np
-import requests
 import paho.mqtt.client as mqtt
 import json
 
 from config.config import scorpio_config_data, MQTT_PORT, orion_config_data
-from benchmark.utils import print_time
+
+logger = logging.getLogger(__name__)
 
 # UTC+2 timezone used for all send timestamps embedded in Ditto payloads.
 tz = timezone(timedelta(hours=2))
@@ -177,7 +178,7 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
     time.sleep(sleep_time)
 
     next_time = time.perf_counter()
-    print_time("ℹ️ Sending messages...")
+    logger.info("Sending messages (uniform law)...")
 
     try:
         while not sent >= nb_messages:
@@ -206,7 +207,7 @@ def send_messages_uniformlaw(devices, dt_solution, msg_frequency_hz, nb_seconds,
         client.loop_stop()
         client.disconnect()
 
-    print_time("✔️ All messages have been sent")
+    logger.info("All uniform-law messages have been sent.")
 
 
 def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, start_time, nb_attributes, bytes_per_attribute):
@@ -230,7 +231,7 @@ def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, s
     mqtt_broker = "localhost"
     payload = generate_payload(dt_solution, nb_attributes, bytes_per_attr=bytes_per_attribute, tz=tz)
 
-    print_time("Sending messages with Poisson intervals...")
+    logger.info("Sending messages (Poisson law)...")
     t0 = time.time()
     i = 0
 
@@ -259,7 +260,7 @@ def send_messages_poissonlaw(devices, dt_solution, poisson_lambda, nb_seconds, s
         client.loop_stop()
         client.disconnect()
 
-    print_time("All Poisson-distributed messages have been sent")
+    logger.info("All Poisson-law messages have been sent.")
 
 
 def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, start_time, nb_attributes, bytes_per_attribute, center_ratio=0.5, sigma_ratio=0.1):
@@ -304,7 +305,7 @@ def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, sta
     sleep_time = (start_time - datetime.now(tz=tz)).total_seconds()
     time.sleep(sleep_time)
 
-    print_time("Sending messages with gaussian time distribution...")
+    logger.info("Sending messages (Gaussian law)...")
 
     start_perf = time.perf_counter()
     try:
@@ -331,7 +332,7 @@ def send_messages_gaussianlaw(devices, dt_solution, nb_messages, nb_seconds, sta
         client.loop_stop()
         client.disconnect()
 
-    print_time("All gaussian-distributed messages have been sent")
+    logger.info("All Gaussian-law messages have been sent.")
     return start_time
 
 
@@ -402,7 +403,7 @@ def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time,
     queue.put(lambdas_time)
 
     poisson_lambda = lambdas_time[0][1]
-    print_time("ℹ️ Sending messages with MMPP intervals...")
+    logger.info("Sending messages (MMPP law)...")
     t0 = time.time()
     i, lambda_index = 0, 0
 
@@ -451,4 +452,4 @@ def send_messages_mmpp(devices, dt_solution, lambdas, P, nb_seconds, start_time,
         client.loop_stop()
         client.disconnect()
 
-    print_time("✔️ All MMPP-distributed messages have been sent")
+    logger.info("All MMPP-law messages have been sent.")

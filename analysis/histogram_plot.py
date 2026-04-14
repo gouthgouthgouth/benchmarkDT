@@ -9,12 +9,17 @@ Configure ``duration``, ``lambdas``, and ``bin_size`` at the top of the script
 before running.
 """
 import glob
+import logging
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import pandas as pd
 
 from analysis.common import extraire_colonnes_csv
+from benchmark.utils import configure_logging
+
+configure_logging()
+logger = logging.getLogger(__name__)
 
 # --- Parameters ---
 duration = "18000"   # Experiment duration to plot (as it appears in the file name)
@@ -72,10 +77,10 @@ for f in files_to_plot:
     )
     df["delai"] = pd.to_numeric(df["delai"], errors="coerce")
     nombre_nan = df["delai"].isna().sum()
-    print(f"Nombre de NaN : {nombre_nan}")
+    logger.debug("NaN count in delay column: %d", nombre_nan)
     df["delai"] = df["delai"] * 1000
     dfs[f] = df
-    print(df["delai"].describe())
+    logger.debug("Delay statistics:\n%s", df["delai"].describe())
 
 # --- Compute consistent bin edges across all histograms ---
 all_delays = []

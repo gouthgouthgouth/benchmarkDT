@@ -5,6 +5,7 @@ Provides two functions intended to run concurrently with the benchmark:
 one captures every MQTT message and its arrival timestamp, the other
 launches shell scripts that periodically sample CPU and RAM usage.
 """
+import logging
 import subprocess
 
 import paho.mqtt.client as mqtt
@@ -13,6 +14,8 @@ from zoneinfo import ZoneInfo
 import os
 
 from config.config import PROJECT_FOLDER
+
+logger = logging.getLogger(__name__)
 
 
 def record_logs_mosquitto(date, dt_solution):
@@ -49,7 +52,7 @@ def record_logs_mosquitto(date, dt_solution):
     client.on_message = on_message
     client.connect(broker, port, 60)
 
-    print(f"Logging raw MQTT messages with timestamps to {output_file}")
+    logger.info("Logging MQTT messages to %s", output_file)
     client.loop_forever()
 
 
@@ -69,13 +72,13 @@ def record_logs_cpu_ram_delay(date, dt_solution):
             or ``None`` if ``dt_solution`` is invalid.
     """
     if dt_solution not in ["ditto", "scorpio", "orion_ld"]:
-        print("Erreur dt_solution mal renseigné")
+        logger.error("Invalid dt_solution value: '%s'", dt_solution)
         return None, None
 
     base_path = f"./measures/{dt_solution}"
     process1 = subprocess.Popen(["bash", f"{base_path}/{dt_solution}_get_logs.sh", date])
-    print(f"Script {dt_solution}_get_logs.sh running in background with PID {process1.pid}")
+    logger.debug("%s_get_logs.sh started with PID %d", dt_solution, process1.pid)
     process2 = subprocess.Popen(["bash", f"{base_path}/cpu_ram_get_logs.sh", date])
-    print(f"Script cpu_ram_get_logs.sh running in background with PID {process2.pid}")
+    logger.debug("cpu_ram_get_logs.sh started with PID %d", process2.pid)
 
     return process1.pid, process2.pid

@@ -5,10 +5,14 @@ Generates time-series plots of message end-to-end delays, CPU usage, and RAM
 usage from the CSV files produced by ``write_csvs``. Plots are saved as PNG
 files alongside the result CSVs.
 """
+import logging
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
 from config.config import PROJECT_FOLDER
+
+logger = logging.getLogger(__name__)
 
 
 def plot_courbe_delay(file_datetime, beginning, dt_solution):
@@ -47,7 +51,7 @@ def plot_courbe_delay(file_datetime, beginning, dt_solution):
     plt.legend()
     plt.gcf().autofmt_xdate()
     plt.savefig(f"{PROJECT_FOLDER}/measures/{dt_solution}/results/{file_datetime}-delays-plot.png")
-    print(f"Plot saved as {dt_solution}/results/{file_datetime}-delays-plot.png")
+    logger.info("Delay plot saved: %s/results/%s-delays-plot.png", dt_solution, file_datetime)
     plt.close()
 
 
@@ -84,7 +88,7 @@ def plot_courbe_cpuram(file_datetime, file_name, beginning, dt_solution):
     plt.grid(True)
     plt.legend()
     plt.savefig(f"{PROJECT_FOLDER}/measures/{dt_solution}/results/{file_name}-cpu-plot.png")
-    print(f"CPU plot saved as {dt_solution}/{file_name}-cpu-plot.png")
+    logger.info("CPU plot saved: %s/%s-cpu-plot.png", dt_solution, file_name)
 
     plt.figure(figsize=(12, 6))
     plt.plot(df["timestamp_seconds"], df[" MemUsageMiB"], marker='.', linestyle='-', label="Memory usage (MiB)")
@@ -94,5 +98,5 @@ def plot_courbe_cpuram(file_datetime, file_name, beginning, dt_solution):
     plt.grid(True)
     plt.legend()
     plt.savefig(f"{PROJECT_FOLDER}/measures/{dt_solution}/results/{file_name}-ram-plot.png")
-    print(f"RAM plot saved as {dt_solution}/{file_name}-ram-plot.png")
+    logger.info("RAM plot saved: %s/%s-ram-plot.png", dt_solution, file_name)
     plt.close()

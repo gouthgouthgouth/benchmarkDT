@@ -8,6 +8,7 @@ of entity count.
 
 Configure ``duration``, ``freq``, and ``mqtt_delay`` at the top of the script.
 """
+import logging
 import os
 import re
 from copy import deepcopy
@@ -16,6 +17,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from config.config import PROJECT_FOLDER
+from benchmark.utils import configure_logging
+
+configure_logging()
+logger = logging.getLogger(__name__)
 
 # --- Parameters ---
 duration = 300   # Experiment duration to include (seconds)
@@ -67,7 +72,7 @@ for meta in results.values():
                 delay = pd.to_numeric(df["delay (s)"], errors='coerce').dropna().mean()
                 delay_per_solution_entities.setdefault(broker, {})[nb_entities] = delay
             except Exception as e:
-                print(f"Erreur avec {filepath} : {e}")
+                logger.error("Error reading %s: %s", filepath, e)
 
 entities_list = sorted(entities_set)
 
@@ -96,4 +101,4 @@ plt.ylim(0.0025, 0.025)
 
 file_name = f"lineplot_duration{duration}_freq{freq}_addeddelay{mqtt_delay}.png"
 plt.savefig(os.path.join(output_dir, file_name))
-print(f"Graphique sauvegardé dans {output_dir}/{file_name}")
+logger.info("Plot saved to %s/%s", output_dir, file_name)
