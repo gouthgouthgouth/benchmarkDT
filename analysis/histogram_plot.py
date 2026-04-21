@@ -23,8 +23,13 @@ logger = logging.getLogger(__name__)
 
 # --- Parameters ---
 duration = "36000"   # Experiment duration to plot (as it appears in the file name)
-lambdas = "10-20-40" # MMPP lambda set to plot
-bin_size = 10        # Histogram bin width in ms; set to None for automatic sizing
+# lambdas = "5-10-20" # MMPP lambda set to plot
+lambdas = "10-20-40"
+# lambdas = "20-40-80"
+# lambdas = "25-50-100"
+# lambdas = "50-100-200"
+# lambdas = "75-150-300"
+bin_size = 11        # Histogram bin width in ms; set to None for automatic sizing
 x_min = None         # Left x-axis limit; None = auto
 x_max = None         # Right x-axis limit; None = auto
 
@@ -140,7 +145,7 @@ for ax, f in zip(axes, dfs):
     ax.grid(axis="y", linestyle="--", alpha=0.4)
     ax.set_yscale('log')
     ax.set_xlabel("Delay (ms)")
-    ax.set_ylabel("Frequency")
+    ax.set_ylabel("Occurences")
     ax.set_xlim(x_min, x_max)
 
 plt.tight_layout()
