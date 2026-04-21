@@ -26,6 +26,8 @@ csv_filepaths_scorpio = sorted(glob.glob("../measures/scorpio/results_merged/*.c
 
 # --- File filtering ---
 duration = "36000"
+# entities = 200
+# lambdas_lists = ["25-50-100", "50-100-200", "75-150-300"]
 entities = 50
 lambdas_lists = ["5-10-20", "10-20-40", "20-40-80"]
 
@@ -49,7 +51,7 @@ for filepath in csv_filepaths_ditto:
     # Build a human-readable label from the lambda values in the file name.
     lambdas = filepath.split("lambdas_")[1].split("-delays")[0]
     lambdas_str = ", ".join(lambdas.split("-"))
-    fp = "Ditto, " + "lambdas = " + lambdas_str
+    fp = f"Ditto, λ ∈ {{{lambdas_str}}}"
 
     dict_columns = extraire_colonnes_csv(filepath)
     dictionnarys[fp] = dict_columns
@@ -59,7 +61,7 @@ for filepath in csv_filepaths_ditto:
 for filepath in csv_filepaths_orion:
     lambdas = filepath.split("lambdas_")[1].split("-delays")[0]
     lambdas_str = ", ".join(lambdas.split("-"))
-    fp = "Orion-LD, " + "lambdas = " + lambdas_str
+    fp = f"Orion-LD, λ ∈ {{{lambdas_str}}}"
 
     dict_columns = extraire_colonnes_csv(filepath)
     dictionnarys[fp] = dict_columns
@@ -69,7 +71,7 @@ for filepath in csv_filepaths_orion:
 for filepath in csv_filepaths_scorpio:
     lambdas = filepath.split("lambdas_")[1].split("-delays")[0]
     lambdas_str = ", ".join(lambdas.split("-"))
-    fp = "Scorpio, " + "lambdas = " + lambdas_str
+    fp = f"Scorpio, λ ∈ {{{lambdas_str}}}"
 
     dict_columns = extraire_colonnes_csv(filepath)
     dictionnarys[fp] = dict_columns
@@ -101,6 +103,6 @@ plt.xscale("log")
 plt.xlim(left=2)
 plt.xlim(right=300)
 plt.grid(True, which="both", ls="--", linewidth=0.5)
-plt.legend(loc="upper right", fontsize=15)
+plt.legend(loc="lower left", fontsize=15)
 plt.tight_layout()
 plt.savefig(f"plots/ccdf_lambdas={lambdas_lists}_duration={duration}s.png", dpi=300)
